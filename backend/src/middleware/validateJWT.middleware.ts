@@ -4,6 +4,9 @@ import { UserModel } from "../models/index.ts";
 import { verifyToken } from "../utils/getToken.utils.ts";
 import { JwtPayload } from "jsonwebtoken";
 
+const hasUserId = (payload: string | JwtPayload): payload is JwtPayload & { id: string } => {
+    return typeof payload !== 'string' && typeof payload.id === 'string';
+};
 
 export const validateJWT = async (req: Request, res: Response, next: NextFunction) => {
     if (req.method == "OPTIONS") {
@@ -22,7 +25,7 @@ export const validateJWT = async (req: Request, res: Response, next: NextFunctio
             )
             : undefined;
             
-            if (payload) {
+            if (payload && hasUserId(payload)) {
                 
                 const user = await UserModel.findById(payload.id)
 

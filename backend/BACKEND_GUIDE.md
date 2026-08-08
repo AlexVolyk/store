@@ -1382,16 +1382,22 @@ Start implementing authentication models, routes, controllers, services, and mid
 - [x] Connect MongoDB setup file
 - [x] Create server entry file
 - [x] Add global error middleware
-- [ ] Create User model
+- [x] Create User model
 - [ ] Create Auth routes
 - [ ] Create Auth controller
 - [ ] Create Auth service
 - [ ] Create JWT utility
 - [ ] Create auth middleware
-- [ ] Create Category model/routes
-- [ ] Create Product model/routes
-- [ ] Create Cart model/routes
-- [ ] Create Order model/routes
-- [ ] Create Review model/routes
-- [ ] Create Wishlist model/routes
+- [x] Create Category model
+- [ ] Create Category routes
+- [x] Create Product model
+- [ ] Create Product routes
+- [x] Create Cart model
+- [ ] Create Cart routes
+- [x] Create Order model
+- [ ] Create Order routes
+- [x] Create Review model
+- [ ] Create Review routes
+- [x] Create Wishlist model
+- [ ] Create Wishlist routes
 - [ ] Add deployment configuration

@@ -6,7 +6,7 @@ import { hashPassword } from '../utils/index.ts';
 export const allUsers = async (req: Request, res: Response, _next: NextFunction) => {
 
     res.json({
-        users: await UserModel.find()
+        users: await UserModel.find({},{ createdAt: 0, updatedAt: 0, password: 0})
     })
 }
 
