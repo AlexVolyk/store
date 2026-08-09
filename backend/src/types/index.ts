@@ -4,5 +4,6 @@ export * from './express.types.ts';
 export * from './order.types.ts';
 export * from './product.types.ts';
 export * from './review.types.ts';
+export * from './service.types.ts';
 export * from './user.types.ts';
 export * from './wishlist.types.ts';

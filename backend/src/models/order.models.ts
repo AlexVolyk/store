@@ -1,3 +1,4 @@
+import { InferSchemaType } from 'mongoose';
 import { db } from '../config/db.ts';
 import { IOrder } from '../types/index.ts';
 
@@ -142,3 +143,4 @@ const OrderSchema = new db.Schema<IOrder>(
 );
 
 export const OrderModel = db.model('Order', OrderSchema);
+export type OrderSchemaType = InferSchemaType<typeof OrderSchema>;

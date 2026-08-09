@@ -6,6 +6,9 @@ declare global {
     namespace Express {
         interface Request {
             user?: IUser;
+            validatedBody?: unknown;
+            validatedParams?: unknown;
+            validatedQuery?: unknown;
         }
     }
 }

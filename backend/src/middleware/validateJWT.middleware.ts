@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { env } from "../config/env.ts";
 import { UserModel } from "../models/index.ts";
-import { verifyToken } from "../utils/getToken.utils.ts";
+import { verifyToken } from "../utils/token.utils.ts";
 import { JwtPayload } from "jsonwebtoken";
+import { invalidToken, sendUnauthorized } from "../utils/controller.utils.ts";
 
 const hasUserId = (payload: string | JwtPayload): payload is JwtPayload & { id: string } => {
     return typeof payload !== 'string' && typeof payload.id === 'string';
@@ -13,41 +14,34 @@ export const validateJWT = async (req: Request, res: Response, next: NextFunctio
         next();
 
     } else if (
-        req.headers.authorization &&
-        req.headers.authorization.includes(env.jwtSecret)
-        ) {
+        req.headers.authorization
+    ) {
 
-            const {authorization} = req.headers;
+        const { authorization } = req.headers;
 
-            const payload: undefined| string | JwtPayload = authorization ? verifyToken(authorization.includes(env.jwtSecret)
-            ? authorization.split(' ')[1]
-            : authorization, env.jwtSecret
-            )
+        const token = authorization?.split(' ')[1];
+
+        const payload = token
+            ? verifyToken(token, env.jwtSecret)
             : undefined;
-            
-            if (payload && hasUserId(payload)) {
-                
-                const user = await UserModel.findById(payload.id)
 
+        if (payload && hasUserId(payload)) {
 
-                if (user) {
-                    req.user = user;
-                    next();
+            const user = await UserModel.findById(payload.id)
 
-                } else {
-                    res.status(400).json({message: "Not Authorized"
-                    });
-                }
+            if (user) {
+                req.user = user;
+                next();
 
             } else {
-                res.status(401).send({
-                    message: "Invalid token"
-                });
+                sendUnauthorized(res)
             }
 
+        } else {
+            invalidToken(res)
+        }
+
     } else {
-        res.status(403).send({
-            message: "Forbidden"
-        });
+        sendUnauthorized(res)
     }
 };
