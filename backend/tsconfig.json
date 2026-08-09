@@ -10,8 +10,9 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
     "types": ["node"],
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "src/services/review.services.ts"],
   "exclude": ["node_modules", "dist"]
 }
