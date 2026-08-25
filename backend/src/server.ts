@@ -1,6 +1,6 @@
-import { app } from './app.js';
-import { db } from './config/db.js';
-import { env } from './config/env.js';
+import { app } from './app.ts';
+import { db } from './config/db.ts';
+import { env } from './config/env.ts';
 
 const startServer = async (): Promise<void> => {
   try {
