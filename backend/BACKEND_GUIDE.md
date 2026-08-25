@@ -378,7 +378,7 @@ Create `src/config/db.ts`:
 ```ts
 import mongoose from 'mongoose';
 
-import { env } from './env.js';
+import { env } from './env.ts';
 
 export const connectDB = async (): Promise<void> => {
   if (!env.mongoUri) {
@@ -460,8 +460,8 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import { env } from './config/env.js';
-import { errorHandler, notFoundHandler } from './middleware/errorMiddleware.js';
+import { env } from './config/env.ts';
+import { errorHandler, notFoundHandler } from './middleware/errorMiddleware.ts';
 
 export const app = express();
 
@@ -547,9 +547,9 @@ This separation is useful because later you can test `app` without starting a re
 Create `src/server.ts`:
 
 ```ts
-import { app } from './app.js';
-import { connectDB } from './config/db.js';
-import { env } from './config/env.js';
+import { app } from './app.ts';
+import { connectDB } from './config/db.ts';
+import { env } from './config/env.ts';
 
 const startServer = async (): Promise<void> => {
   try {
@@ -1383,21 +1383,28 @@ Start implementing authentication models, routes, controllers, services, and mid
 - [x] Create server entry file
 - [x] Add global error middleware
 - [x] Create User model
-- [ ] Create Auth routes
-- [ ] Create Auth controller
-- [ ] Create Auth service
-- [ ] Create JWT utility
-- [ ] Create auth middleware
+- [x] Create Auth routes
+- [x] Create Auth controller
+- [x] Create Auth service
+- [x] Create JWT utility
+- [x] Create auth middleware
+- [x] Create DTO types for backend resources
 - [x] Create Category model
-- [ ] Create Category routes
+- [x] Create Category routes
+- [x] Create Category controller
 - [x] Create Product model
-- [ ] Create Product routes
+- [x] Create Product routes
+- [x] Create Product controller
 - [x] Create Cart model
-- [ ] Create Cart routes
+- [x] Create Cart routes
+- [x] Create Cart controller
 - [x] Create Order model
-- [ ] Create Order routes
+- [x] Create Order routes
+- [x] Create Order controller
 - [x] Create Review model
-- [ ] Create Review routes
+- [x] Create Review routes
+- [x] Create Review controller
 - [x] Create Wishlist model
-- [ ] Create Wishlist routes
+- [x] Create Wishlist routes
+- [x] Create Wishlist controller
 - [ ] Add deployment configuration

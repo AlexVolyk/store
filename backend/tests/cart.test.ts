@@ -1,14 +1,14 @@
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { app } from '../src/app.js';
+import { app } from '../src/app.ts';
 import {
     CartModel,
     CategoryModel,
     ProductModel,
     UserModel,
-} from '../src/models/index.js';
-import { getToken } from '../src/utils/index.js';
+} from '../src/models/index.ts';
+import { getToken } from '../src/utils/index.ts';
 
 describe('Cart API', () => {
     beforeEach(async () => {

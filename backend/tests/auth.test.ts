@@ -1,8 +1,8 @@
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { app } from '../src/app.js';
-import { UserModel } from '../src/models/index.js';
+import { app } from '../src/app.ts';
+import { UserModel } from '../src/models/index.ts';
 
 describe('Auth API', () => {
     beforeEach(async () => {
