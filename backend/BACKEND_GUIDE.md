@@ -1383,21 +1383,28 @@ Start implementing authentication models, routes, controllers, services, and mid
 - [x] Create server entry file
 - [x] Add global error middleware
 - [x] Create User model
-- [ ] Create Auth routes
-- [ ] Create Auth controller
-- [ ] Create Auth service
-- [ ] Create JWT utility
-- [ ] Create auth middleware
+- [x] Create Auth routes
+- [x] Create Auth controller
+- [x] Create Auth service
+- [x] Create JWT utility
+- [x] Create auth middleware
+- [x] Create DTO types for backend resources
 - [x] Create Category model
-- [ ] Create Category routes
+- [x] Create Category routes
+- [x] Create Category controller
 - [x] Create Product model
-- [ ] Create Product routes
+- [x] Create Product routes
+- [x] Create Product controller
 - [x] Create Cart model
-- [ ] Create Cart routes
+- [x] Create Cart routes
+- [x] Create Cart controller
 - [x] Create Order model
-- [ ] Create Order routes
+- [x] Create Order routes
+- [x] Create Order controller
 - [x] Create Review model
-- [ ] Create Review routes
+- [x] Create Review routes
+- [x] Create Review controller
 - [x] Create Wishlist model
-- [ ] Create Wishlist routes
+- [x] Create Wishlist routes
+- [x] Create Wishlist controller
 - [ ] Add deployment configuration
