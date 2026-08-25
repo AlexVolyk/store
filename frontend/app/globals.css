@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+
+@theme inline {
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+}
+
+:root {
+  --radius: 0.5rem;
+
+  /* Forma Store Brand Palette - Light Mode */
+  --background: #f5f4f0;
+  --foreground: #1e1c18;
+  --card: #ffffff;
+  --card-foreground: #1e1c18;
+  --popover: #ffffff;
+  --popover-foreground: #1e1c18;
+  --primary: #5c6f4e;
+  --primary-foreground: #ffffff;
+  --secondary: #edf0ea;
+  --secondary-foreground: #5c6f4e;
+  --muted: #f9f8f5;
+  --muted-foreground: #6b6560;
+  --accent: #edf0ea;
+  --accent-foreground: #5c6f4e;
+  --destructive: #b85c4a;
+  --destructive-foreground: #ffffff;
+  --border: #e2ded6;
+  --input: #c8c2b8;
+  --ring: #5c6f4e;
+
+  /* Backwards-compatibility aliases */
+  --color-bg: var(--background);
+  --color-surface: var(--card);
+  --color-panel: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--input);
+  --color-muted: #9e9890;
+  --color-text: var(--foreground);
+  --color-text-dim: var(--muted-foreground);
+  --color-accent: var(--primary);
+  --color-accent-light: var(--secondary);
+  --color-accent-hover: #4a5a3d;
+  --color-danger: var(--destructive);
+  --color-header-bg: var(--card);
+  --color-footer-bg: var(--card);
+  --color-card-shadow: rgba(0, 0, 0, 0.06);
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+[data-theme="dark"],
+.dark {
+  /* Forma Store Brand Palette - Dark Mode */
+  --background: #0e0e0f;
+  --foreground: #e8e8ea;
+  --card: #161618;
+  --card-foreground: #e8e8ea;
+  --popover: #1c1c1f;
+  --popover-foreground: #e8e8ea;
+  --primary: #d4a853;
+  --primary-foreground: #0e0e0f;
+  --secondary: rgba(212, 168, 83, 0.14);
+  --secondary-foreground: #d4a853;
+  --muted: #1c1c1f;
+  --muted-foreground: #9d9da6;
+  --accent: rgba(212, 168, 83, 0.14);
+  --accent-foreground: #d4a853;
+  --destructive: #c46e5c;
+  --destructive-foreground: #ffffff;
+  --border: #2a2a2e;
+  --input: #3a3a40;
+  --ring: #d4a853;
+
+  /* Backwards-compatibility aliases */
+  --color-bg: var(--background);
+  --color-surface: var(--card);
+  --color-panel: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--input);
+  --color-muted: #6b6b74;
+  --color-text: var(--foreground);
+  --color-text-dim: var(--muted-foreground);
+  --color-accent: var(--primary);
+  --color-accent-light: var(--secondary);
+  --color-accent-hover: #c49a3f;
+  --color-danger: var(--destructive);
+  --color-header-bg: #17171a;
+  --color-footer-bg: #17171a;
+  --color-card-shadow: rgba(0, 0, 0, 0.40);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--input); }
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+  border-radius: 2px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 2px solid var(--card);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.22);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 2px solid var(--card);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.22);
+}
