@@ -1,12 +1,27 @@
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import { env } from '../config/env.ts'
 
-export const getToken = (id: string | number) => jwt.sign({ id: id }, env.jwtSecret, { expiresIn: 60 * 60 * 24 })
+export interface UserTokenPayload extends JwtPayload {
+    id: string
+}
 
-export const verifyToken = (token: string, secret: string) => {
+export const hasUserId = (payload: unknown): payload is UserTokenPayload => {
+    return (
+        typeof payload === 'object' &&
+        payload !== null &&
+        'id' in payload &&
+        typeof (payload as Record<string, unknown>).id === 'string'
+    )
+}
+
+export const getToken = (id: string | number) => {
+    return jwt.sign({ id: String(id) }, env.jwtSecret, { expiresIn: 60 * 60 * 24 })
+}
+
+export const verifyToken = (token: string, secret = env.jwtSecret): UserTokenPayload | undefined => {
     try {
-        return jwt.verify(token, secret)
-
+        const decoded = jwt.verify(token, secret)
+        return hasUserId(decoded) ? decoded : undefined
     } catch {
         return undefined
     }
