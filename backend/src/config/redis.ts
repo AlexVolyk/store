@@ -5,8 +5,16 @@ export const redis = createClient({
     url: env.redisUrl || 'redis://localhost:6379',
 });
 
-redis.on('error', (err) => console.log('[Redis Error]', err));
+redis.on('error', (err) => {
+    // Only log if redis was previously connected or url explicitly set
+    if (env.redisUrl) {
+        console.warn('[Redis Error]:', err.message);
+    }
+});
 
-if (env.redisUrl) {
+try {
     await redis.connect();
+    console.log('⚡ [Redis] Connected successfully');
+} catch {
+    console.log('ℹ️ [Redis] Server not running locally — caching bypassed, using MongoDB');
 }
