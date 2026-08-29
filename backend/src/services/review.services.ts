@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { OrderModel, ProductModel, ReviewModel } from '../models/index.ts';
 import type { CreateReviewDTO, UpdateReviewDTO } from '../validators/review.validators.ts';
 import { ServiceResult } from '../types/service.types.ts';
+import { clearCachePattern } from '../utils/index.ts';
 
 const updateProductRating = async (productId: string) => {
     const result = await ReviewModel.aggregate<{
@@ -32,6 +33,8 @@ const updateProductRating = async (productId: string) => {
         averageRating: Number(stats.averageRating.toFixed(1)),
         reviewCount: stats.reviewCount,
     });
+
+    await clearCachePattern('cache:/api/products*');
 };
 
 export const getProductReviews = async (productId: string): Promise<ServiceResult> => {

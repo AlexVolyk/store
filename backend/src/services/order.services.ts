@@ -1,5 +1,6 @@
 import { OrderModel, ProductModel } from '../models/index.ts';
 import { OrderSchemaType } from '../models/order.models.ts';
+import { clearCachePattern } from '../utils/index.ts';
 
 import type { ServiceResult } from '../types/index.ts';
 import { CreateOrderDTO, UpdateOrderStatusDTO } from '../validators/order.validators.ts';
@@ -85,6 +86,9 @@ export const createOrder = async (
         })),
     );
 
+    // Invalidate product cache so updated stock reflects immediately
+    await clearCachePattern('cache:/api/products*');
+
     return {
         statusCode: 201,
         data: order,
@@ -125,7 +129,7 @@ export const getOrderById = async (id: string): Promise<ServiceResult<OrderDocum
     };
 };
 
-export const markOrderAsPaid = async (id: string): Promise<ServiceResult> => {
+export const markOrderAsPaid = async (id: string): Promise<ServiceResult<OrderDocument>> => {
     const order = await OrderModel.findByIdAndUpdate(
         id,
         {
@@ -225,6 +229,11 @@ export const updateOrderStatus = async (
     }
 
     await existingOrder.save();
+
+    // If order was cancelled/reopened, invalidate product cache so stock updates reflect immediately
+    if (previousStatus !== newStatus) {
+        await clearCachePattern('cache:/api/products*');
+    }
 
     return {
         statusCode: 200,

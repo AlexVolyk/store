@@ -12,13 +12,24 @@ import { requireAdmin } from '../middleware/admin.middleware.ts';
 import { validateBody, validateParams } from '../middleware/validate.middleware.ts';
 import { idOrSlugParamsSchema, idParamsSchema } from '../validators/common.validators.ts';
 import { createCategorySchema, updateCategorySchema } from '../validators/category.validators.ts';
+import { CACHE_TTL } from '../constants/index.ts';
+import { cacheMiddleware } from '../middleware/cache.middleware.ts';
 
 const categoryRouter = express.Router();
 
 // ── Public Category Routes ──
-categoryRouter.get('/', getCategories);
+categoryRouter.get(
+    '/',
+    cacheMiddleware(CACHE_TTL.CATEGORIES),
+    getCategories
+);
 
-categoryRouter.get('/:id', validateParams(idOrSlugParamsSchema), getCategoryById);
+categoryRouter.get(
+    '/:id',
+    cacheMiddleware(CACHE_TTL.CATEGORIES),
+    validateParams(idOrSlugParamsSchema),
+    getCategoryById
+);
 
 // ── Protected Admin Category Routes ──
 categoryRouter.use(validateJWT, requireAdmin);

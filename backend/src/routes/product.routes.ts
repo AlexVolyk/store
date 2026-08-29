@@ -16,13 +16,25 @@ import {
     productQuerySchema,
     updateProductSchema,
 } from '../validators/product.validators.ts';
+import { CACHE_TTL } from '../constants/index.ts';
+import { cacheMiddleware } from '../middleware/cache.middleware.ts';
 
 const productRouter = express.Router();
 
 // ── Public Product Discovery Routes ──
-productRouter.get('/', validateQuery(productQuerySchema), getProducts);
+productRouter.get(
+    '/',
+    cacheMiddleware(CACHE_TTL.PRODUCTS),
+    validateQuery(productQuerySchema),
+    getProducts
+);
 
-productRouter.get('/:id', validateParams(idOrSlugParamsSchema), getProductById);
+productRouter.get(
+    '/:id',
+    cacheMiddleware(CACHE_TTL.PRODUCTS),
+    validateParams(idOrSlugParamsSchema),
+    getProductById
+);
 
 // ── Protected Admin Product Routes ──
 productRouter.use(validateJWT, requireAdmin);

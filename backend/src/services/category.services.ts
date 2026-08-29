@@ -2,7 +2,7 @@ import { isValidObjectId } from 'mongoose';
 import { CategoryModel, ProductModel } from '../models/index.ts';
 import type { ServiceResult } from '../types/index.ts';
 import { CreateCategoryDTO, UpdateCategoryDTO } from '../validators/category.validators.ts';
-import { slugify } from '../utils/slug.utils.ts';
+import { clearCachePattern, slugify } from '../utils/index.ts';
 
 export const getCategories = async (): Promise<ServiceResult> => {
     const categories = await CategoryModel.find()
@@ -61,6 +61,9 @@ export const createCategory = async (categoryDTO: CreateCategoryDTO): Promise<Se
         slug,
     });
 
+    await clearCachePattern('cache:/api/categories*');
+    await clearCachePattern('cache:/api/products*');
+
     return {
         statusCode: 201,
         data: category,
@@ -113,6 +116,9 @@ export const updateCategory = async (
         };
     }
 
+    await clearCachePattern('cache:/api/categories*');
+    await clearCachePattern('cache:/api/products*');
+
     return {
         statusCode: 200,
         data: category,
@@ -140,6 +146,9 @@ export const deleteCategory = async (id: string): Promise<ServiceResult> => {
     }
 
     await category.deleteOne();
+
+    await clearCachePattern('cache:/api/categories*');
+    await clearCachePattern('cache:/api/products*');
 
     return {
         statusCode: 200,
