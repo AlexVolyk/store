@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 
-import { ProductModel, ReviewModel } from "../models/index.ts";
+import { OrderModel, ProductModel, ReviewModel } from "../models/index.ts";
 import type {
     CreateReviewDTO,
     UpdateReviewDTO,
@@ -37,8 +37,28 @@ const updateProductRating = async (productId: string) => {
     });
 };
 
+export const getProductReviews = async (
+    productId: string,
+): Promise<ServiceResult> => {
+    const product = await ProductModel.findById(productId);
 
+    if (!product) {
+        return {
+            statusCode: 404,
+            message: "Product not found",
+        };
+    }
 
+    const reviews = await ReviewModel.find({ product: productId })
+        .populate("user", "firstName lastName avatar")
+        .sort({ createdAt: -1 });
+
+    return {
+        statusCode: 200,
+        data: reviews,
+        message: "Product reviews fetched successfully",
+    };
+};
 
 export const createProductReview = async (
     userId: string,
@@ -66,10 +86,18 @@ export const createProductReview = async (
         };
     }
 
+    // Check if the user has an actual delivered order for this product (Verified Buyer check)
+    const deliveredOrder = await OrderModel.findOne({
+        user: userId,
+        "items.product": productId,
+        orderStatus: "delivered",
+    });
+
     const review = await ReviewModel.create({
         ...reviewDTO,
         user: userId,
         product: productId,
+        isVerifiedPurchase: Boolean(deliveredOrder),
     });
 
     await updateProductRating(productId);
@@ -117,7 +145,7 @@ export const updateReview = async (
 
     await review.save();
 
-    await updateProductRating(review.product.toString(),);
+    await updateProductRating(review.product.toString());
 
     return {
         statusCode: 200,

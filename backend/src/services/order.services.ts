@@ -14,91 +14,78 @@ export const createOrder = async (
     userId: string,
     orderDTO: CreateOrderDTO,
 ): Promise<ServiceResult> => {
-    const orderItems = await Promise.all(
-        orderDTO.items.map(async (item) => {
-            const product = await ProductModel.findById(item.product);
+    // 1. 🚀 Query Optimization: Fetch ALL ordered products in ONE single batch query ($in)
+    const productIds = orderDTO.items.map((item) => item.product);
+    const products = await ProductModel.find({ _id: { $in: productIds } });
 
-            if (!product) {
-                return {
-                    error: `Product not found: ${item.product}`,
-                    statusCode: 400,
-                };
-            }
+    // Map by string ID for fast O(1) in-memory lookup
+    const productMap = new Map(products.map((p) => [p._id.toString(), p]));
 
-            if (!product.isActive) {
-                return {
-                    error: `Product is not available: ${product.name}`,
-                    statusCode: 422,
-                };
-            }
+    // 2. In-memory validation and snapshot calculation (Zero additional DB calls)
+    const orderItems = [];
+    let itemsPrice = 0;
 
-            if (product.stock < item.quantity) {
-                return {
-                    error: `Not enough stock for product: ${product.name}`,
-                    statusCode: 422,
-                };
-            }
+    for (const item of orderDTO.items) {
+        const product = productMap.get(item.product);
 
-            const price = product.discountPrice ?? product.price;
-
+        if (!product) {
             return {
-                product: product._id,
-                name: product.name,
-                image: product.images[0],
-                price,
-                quantity: item.quantity,
+                statusCode: 400,
+                message: `Product not found: ${item.product}`,
             };
-        }),
-    );
+        }
 
-    const errorItem = orderItems.find(
-        (item) => "error" in item,
-    );
+        if (!product.isActive) {
+            return {
+                statusCode: 422,
+                message: `Product is not available: ${product.name}`,
+            };
+        }
 
-    if (errorItem && "error" in errorItem) {
-        return {
-            statusCode: errorItem.statusCode || 400,
-            message: errorItem.error || 'Bad request',
-        };
+        if (product.stock < item.quantity) {
+            return {
+                statusCode: 422,
+                message: `Not enough stock for product: ${product.name} (Available: ${product.stock}, Requested: ${item.quantity})`,
+            };
+        }
+
+        const price = product.discountPrice ?? product.price;
+        itemsPrice += price * item.quantity;
+
+        orderItems.push({
+            product: product._id,
+            name: product.name,
+            image: product.images?.[0] ?? '',
+            price,
+            quantity: item.quantity,
+        });
     }
 
-    const itemsPrice = orderItems.reduce(
-        (sum, item) => {
-            if ("error" in item) {
-                return sum;
-            }
+    const shippingPrice = orderDTO.shippingPrice ?? 0;
+    const taxPrice = orderDTO.taxPrice ?? 0;
+    const totalPrice = itemsPrice + shippingPrice + taxPrice;
 
-            return (
-                sum + item.price * item.quantity
-            );
-        },
-        0,
+    // 3. Create the order document
+    const order = await OrderModel.create({
+        user: userId,
+        items: orderItems,
+        shippingAddress: orderDTO.shippingAddress,
+        paymentMethod: orderDTO.paymentMethod,
+        itemsPrice,
+        shippingPrice,
+        taxPrice,
+        totalPrice,
+    });
+
+    // 4. 🚀 Batch Decrement: Update stock across all products in ONE single atomic bulkWrite
+    await ProductModel.bulkWrite(
+        orderDTO.items.map((item) => ({
+            updateOne: {
+                filter: { _id: item.product },
+                update: { $inc: { stock: -item.quantity } },
+            },
+        }))
     );
-
-    const shippingPrice =
-        orderDTO.shippingPrice ?? 0;
-
-    const taxPrice =
-        orderDTO.taxPrice ?? 0;
-
-    const totalPrice =
-        itemsPrice +
-        shippingPrice +
-        taxPrice;
-
-    const order =
-        await OrderModel.create({
-            user: userId,
-            items: orderItems,
-            shippingAddress:
-                orderDTO.shippingAddress,
-            paymentMethod:
-                orderDTO.paymentMethod,
-            itemsPrice,
-            shippingPrice,
-            taxPrice,
-            totalPrice,
-        });
 
     return {
         statusCode: 201,
@@ -106,7 +93,6 @@ export const createOrder = async (
         message: "Order created successfully",
     };
 };
-
 
 export const getMyOrders = async (userId: string): Promise<ServiceResult> => {
     const orders = await OrderModel.find({
@@ -142,8 +128,18 @@ export const getOrderById = async (id: string): Promise<ServiceResult<OrderDocum
     };
 };
 
-export const markOrderAsPaid = async (id: string): Promise<ServiceResult<OrderDocument>> => {
-    const order = await OrderModel.findById(id);
+export const markOrderAsPaid = async (id: string): Promise<ServiceResult> => {
+    const order = await OrderModel.findByIdAndUpdate(
+        id,
+        {
+            paymentStatus: "paid",
+            paidAt: new Date(),
+        },
+        {
+            new: true,
+            runValidators: true,
+        },
+    );
 
     if (!order) {
         return {
@@ -152,25 +148,12 @@ export const markOrderAsPaid = async (id: string): Promise<ServiceResult<OrderDo
         };
     }
 
-    if (order.paymentStatus === "paid") {
-        return {
-            statusCode: 400,
-            message: "Order is already paid",
-        };
-    }
-
-    order.paymentStatus = "paid";
-    order.paidAt = new Date();
-
-    await order.save();
-
     return {
         statusCode: 200,
         data: order,
         message: "Order marked as paid",
     };
 };
-
 
 export const markOrderAsDelivered = async (id: string): Promise<ServiceResult> => {
     const order = await OrderModel.findByIdAndUpdate(
@@ -203,27 +186,52 @@ export const updateOrderStatus = async (
     id: string,
     orderDTO: UpdateOrderStatusDTO,
 ): Promise<ServiceResult> => {
-    const order = await OrderModel.findByIdAndUpdate(
-        id,
-        {
-            orderStatus: orderDTO.orderStatus,
-        },
-        {
-            new: true,
-            runValidators: true,
-        },
-    );
+    const existingOrder = await OrderModel.findById(id);
 
-    if (!order) {
+    if (!existingOrder) {
         return {
             statusCode: 404,
             message: "Order not found",
         };
     }
 
+    const previousStatus = existingOrder.orderStatus;
+    const newStatus = orderDTO.orderStatus;
+
+    // 🚀 If order is newly cancelled, restore product inventory in ONE single bulkWrite
+    if (previousStatus !== "cancelled" && newStatus === "cancelled") {
+        await ProductModel.bulkWrite(
+            existingOrder.items.map((item) => ({
+                updateOne: {
+                    filter: { _id: item.product },
+                    update: { $inc: { stock: item.quantity } },
+                },
+            }))
+        );
+    }
+
+    // 🚀 If a previously cancelled order is reopened, re-decrement stock in ONE single bulkWrite
+    if (previousStatus === "cancelled" && newStatus !== "cancelled") {
+        await ProductModel.bulkWrite(
+            existingOrder.items.map((item) => ({
+                updateOne: {
+                    filter: { _id: item.product },
+                    update: { $inc: { stock: -item.quantity } },
+                },
+            }))
+        );
+    }
+
+    existingOrder.orderStatus = newStatus;
+    if (newStatus === "delivered" && !existingOrder.deliveredAt) {
+        existingOrder.deliveredAt = new Date();
+    }
+
+    await existingOrder.save();
+
     return {
         statusCode: 200,
-        data: order,
+        data: existingOrder,
         message: "Order status updated successfully",
     };
 };

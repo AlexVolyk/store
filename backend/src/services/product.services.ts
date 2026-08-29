@@ -1,3 +1,4 @@
+import { isValidObjectId } from "mongoose";
 import {
     CategoryModel,
     ProductModel,
@@ -8,17 +9,24 @@ import type {
     ServiceResultProduct,
 } from "../types/index.ts";
 import { CreateProductDTO, ProductQueryDTO, UpdateProductDTO } from "../validators/product.validators.ts";
+import { slugify } from "../utils/slug.utils.ts";
 
 export const getProducts = async (
     query: ProductQueryDTO,
 ): Promise<ServiceResultProduct> => {
-
     const filter: Record<string, unknown> = {
         isActive: true,
     };
 
     if (query.category) {
-        filter.category = query.category;
+        if (isValidObjectId(query.category)) {
+            filter.category = query.category;
+        } else {
+            const categoryDoc = await CategoryModel.findOne({ slug: query.category.toLowerCase().trim() });
+            if (categoryDoc) {
+                filter.category = categoryDoc._id;
+            }
+        }
     }
 
     if (query.search) {
@@ -67,12 +75,11 @@ export const getProducts = async (
             break;
     }
 
-
     const skip = (query.page - 1) * query.limit;
 
     const [products, total] = await Promise.all([
         ProductModel.find(filter)
-            .populate('category', 'name description')
+            .populate('category', 'name slug description')
             .sort(sortOption)
             .skip(skip)
             .limit(query.limit),
@@ -107,9 +114,13 @@ export const getProducts = async (
     };
 };
 
-export const getProductById = async (id: string): Promise<ServiceResult> => {
-    const product = await ProductModel.findById(id)
-        .populate("category", "name description");
+export const getProductById = async (idOrSlug: string): Promise<ServiceResult> => {
+    const query = isValidObjectId(idOrSlug)
+        ? { _id: idOrSlug }
+        : { slug: idOrSlug.toLowerCase().trim() };
+
+    const product = await ProductModel.findOne(query)
+        .populate("category", "name slug description");
 
     if (!product) {
         return {
@@ -128,14 +139,17 @@ export const getProductById = async (id: string): Promise<ServiceResult> => {
 export const createProduct = async (
     productDTO: CreateProductDTO,
 ): Promise<ServiceResult> => {
+    const trimmedName = productDTO.name.trim();
+    const slug = productDTO.slug ? slugify(productDTO.slug) : slugify(trimmedName);
+
     const existingProduct = await ProductModel.findOne({
-        name: productDTO.name.trim(),
+        $or: [{ name: trimmedName }, { slug }],
     });
 
     if (existingProduct) {
         return {
             statusCode: 409,
-            message: "Product with this name already exists",
+            message: "Product with this name or slug already exists",
         };
     }
 
@@ -152,7 +166,8 @@ export const createProduct = async (
 
     const product = await ProductModel.create({
         ...productDTO,
-        name: productDTO.name.trim(),
+        name: trimmedName,
+        slug,
     });
 
     return {
@@ -175,26 +190,37 @@ export const updateProduct = async (
         };
     }
 
+    const updateData: Record<string, unknown> = { ...productDTO };
+
     if (productDTO.name) {
+        updateData.name = productDTO.name.trim();
+    }
+
+    if (productDTO.name && !productDTO.slug) {
+        updateData.slug = slugify(productDTO.name);
+    } else if (productDTO.slug) {
+        updateData.slug = slugify(productDTO.slug);
+    }
+
+    if (updateData.name || updateData.slug) {
         const existingProduct = await ProductModel.findOne({
             _id: { $ne: id },
-            name: productDTO.name.trim(),
+            $or: [
+                ...(updateData.name ? [{ name: updateData.name }] : []),
+                ...(updateData.slug ? [{ slug: updateData.slug }] : []),
+            ],
         });
 
         if (existingProduct) {
             return {
                 statusCode: 409,
-                message: "Product with this name already exists",
+                message: "Product with this name or slug already exists",
             };
         }
     }
 
     if (productDTO.category) {
-        const category =
-            await CategoryModel.findById(
-                productDTO.category,
-            );
-
+        const category = await CategoryModel.findById(productDTO.category);
         if (!category) {
             return {
                 statusCode: 404,
@@ -205,12 +231,7 @@ export const updateProduct = async (
 
     const updatedProduct = await ProductModel.findByIdAndUpdate(
         id,
-        {
-            ...productDTO,
-            ...(productDTO.name && {
-                name: productDTO.name.trim(),
-            }),
-        },
+        updateData,
         {
             new: true,
             runValidators: true,

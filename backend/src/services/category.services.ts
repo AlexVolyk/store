@@ -1,17 +1,18 @@
-import { CategoryModel } from '../models/index.ts';
+import { isValidObjectId } from 'mongoose';
+import { CategoryModel, ProductModel } from '../models/index.ts';
 import type { ServiceResult } from '../types/index.ts';
 import { CreateCategoryDTO, UpdateCategoryDTO } from '../validators/category.validators.ts';
-
-
+import { slugify } from '../utils/slug.utils.ts';
 
 export const getCategories = async (): Promise<ServiceResult> => {
     const categories = await CategoryModel
         .find()
-        .sort({ createdAt: -1 });
+        .sort({ name: 1 });
 
     const message = categories.length === 0
         ? "No categories yet"
-        : "Categories fetched successfully"
+        : "Categories fetched successfully";
+
     return {
         statusCode: 200,
         data: categories,
@@ -19,51 +20,52 @@ export const getCategories = async (): Promise<ServiceResult> => {
     };
 };
 
-export const getCategoryById = async (id: string): Promise<ServiceResult> => {
-    const category = await CategoryModel.findById(id);
-    const message = category ? 'Category fetched successfully' : 'Category not found'
-    const statusCode = category ? 200 : 404
-    if (!category) {
+export const getCategoryById = async (idOrSlug: string): Promise<ServiceResult> => {
+    const query = isValidObjectId(idOrSlug)
+        ? { _id: idOrSlug }
+        : { slug: idOrSlug.toLowerCase().trim() };
 
+    const category = await CategoryModel.findOne(query);
+
+    if (!category) {
         return {
-            statusCode,
-            message
+            statusCode: 404,
+            message: "Category not found",
         };
     }
 
     return {
-        statusCode,
+        statusCode: 200,
         data: category,
-        message
+        message: "Category fetched successfully",
     };
 };
 
-
-
 export const createCategory = async (categoryDTO: CreateCategoryDTO): Promise<ServiceResult> => {
-    const existingCategory = await CategoryModel.findOne({
-        name: categoryDTO.name.trim(),
-    });
-    const message = existingCategory ? 'Category with this name already exists' : 'Category created successfully'
-    const statusCode = existingCategory ? 409 : 201
+    const trimmedName = categoryDTO.name.trim();
+    const slug = categoryDTO.slug ? slugify(categoryDTO.slug) : slugify(trimmedName);
 
+    const existingCategory = await CategoryModel.findOne({
+        $or: [{ name: trimmedName }, { slug }],
+    });
 
     if (existingCategory) {
         return {
-            statusCode,
-            message
+            statusCode: 409,
+            message: "Category with this name or slug already exists",
         };
     }
 
     const category = await CategoryModel.create({
         ...categoryDTO,
-        name: categoryDTO.name.trim(),
+        name: trimmedName,
+        slug,
     });
 
     return {
-        statusCode,
+        statusCode: 201,
         data: category,
-        message
+        message: "Category created successfully",
     };
 };
 
@@ -71,32 +73,38 @@ export const updateCategory = async (
     id: string,
     categoryDTO: UpdateCategoryDTO,
 ): Promise<ServiceResult> => {
-
-    const message = 'Category updated successfully'
-    const statusCode = 200
+    const updateData: Record<string, unknown> = { ...categoryDTO };
 
     if (categoryDTO.name) {
+        updateData.name = categoryDTO.name.trim();
+    }
+
+    if (categoryDTO.name && !categoryDTO.slug) {
+        updateData.slug = slugify(categoryDTO.name);
+    } else if (categoryDTO.slug) {
+        updateData.slug = slugify(categoryDTO.slug);
+    }
+
+    if (updateData.name || updateData.slug) {
         const existingCategory = await CategoryModel.findOne({
             _id: { $ne: id },
-            name: categoryDTO.name.trim(),
+            $or: [
+                ...(updateData.name ? [{ name: updateData.name }] : []),
+                ...(updateData.slug ? [{ slug: updateData.slug }] : []),
+            ],
         });
 
         if (existingCategory) {
             return {
-                message: 'Category with this name already exists',
-                statusCode: 409
-            }
+                statusCode: 409,
+                message: "Category with this name or slug already exists",
+            };
         }
     }
 
     const category = await CategoryModel.findByIdAndUpdate(
         id,
-        {
-            ...categoryDTO,
-            ...(categoryDTO.name && {
-                name: categoryDTO.name.trim(),
-            }),
-        },
+        updateData,
         {
             new: true,
             runValidators: true,
@@ -105,36 +113,42 @@ export const updateCategory = async (
 
     if (!category) {
         return {
-            message: 'Category not found',
-            statusCode: 404
-        }
+            statusCode: 404,
+            message: "Category not found",
+        };
     }
 
     return {
-        statusCode,
+        statusCode: 200,
         data: category,
-        message
+        message: "Category updated successfully",
     };
-
 };
 
 export const deleteCategory = async (id: string): Promise<ServiceResult> => {
-    const category = await CategoryModel.findByIdAndDelete(id);
-
-    const message = category ? 'Category deleted successfully' : 'Category not found'
-    const statusCode = category ? 200 : 404
+    const category = await CategoryModel.findById(id);
 
     if (!category) {
         return {
-            message,
-            statusCode
-        }
+            statusCode: 404,
+            message: "Category not found",
+        };
     }
 
+    // Protect against deleting category that has active products
+    const productsCount = await ProductModel.countDocuments({ category: id });
+    if (productsCount > 0) {
+        return {
+            statusCode: 400,
+            message: `Cannot delete category "${category.name}". It is assigned to ${productsCount} product(s).`,
+        };
+    }
+
+    await category.deleteOne();
 
     return {
+        statusCode: 200,
         data: category,
-        message,
-        statusCode
+        message: "Category deleted successfully",
     };
 };
