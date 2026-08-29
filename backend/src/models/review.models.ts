@@ -27,13 +27,17 @@ const ReviewSchema = new db.Schema<IReview>(
             trim: true,
             maxlength: 1000,
         },
+        isVerifiedPurchase: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,
     },
 );
 
-//? One user - oner review
-ReviewSchema.index({ user: 1, product: 1 }, { unique: true }); 
+// One user can only write one review per product
+ReviewSchema.index({ user: 1, product: 1 }, { unique: true });
 
 export const ReviewModel = db.model('Review', ReviewSchema);

@@ -1,10 +1,16 @@
 import { z } from "zod";
 
-export const productSchema  = z.object({
+export const productSchema = z.object({
     name: z
         .string()
         .trim()
         .min(1, "Product name is required"),
+
+    slug: z
+        .string()
+        .trim()
+        .toLowerCase()
+        .optional(),
 
     description: z
         .string()
@@ -99,7 +105,6 @@ export const productQuerySchema = z.object({
         ])
         .optional(),
 
-
     page: z.coerce
         .number()
         .int()
@@ -113,7 +118,6 @@ export const productQuerySchema = z.object({
         .max(100)
         .default(10),
 });
-
 
 export type CreateProductDTO = z.infer<typeof createProductSchema>;
 

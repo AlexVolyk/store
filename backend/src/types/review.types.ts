@@ -5,6 +5,7 @@ export interface IReview extends Document {
     product: Types.ObjectId;
     rating: number;
     comment: string;
+    isVerifiedPurchase: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
