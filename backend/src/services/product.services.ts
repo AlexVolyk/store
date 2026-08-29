@@ -7,7 +7,7 @@ import {
     ProductQueryDTO,
     UpdateProductDTO,
 } from '../validators/product.validators.ts';
-import { slugify } from '../utils/slug.utils.ts';
+import { clearCachePattern, slugify } from '../utils/index.ts';
 
 export const getProducts = async (query: ProductQueryDTO): Promise<ServiceResultProduct> => {
     const filter: Record<string, unknown> = {
@@ -158,6 +158,8 @@ export const createProduct = async (productDTO: CreateProductDTO): Promise<Servi
         slug,
     });
 
+    await clearCachePattern('cache:/api/products*');
+
     return {
         statusCode: 201,
         data: product,
@@ -222,6 +224,8 @@ export const updateProduct = async (
         runValidators: true,
     });
 
+    await clearCachePattern('cache:/api/products*');
+
     return {
         statusCode: 200,
         data: updatedProduct,
@@ -238,6 +242,8 @@ export const deleteProduct = async (id: string): Promise<ServiceResult> => {
             message: 'Product not found',
         };
     }
+
+    await clearCachePattern('cache:/api/products*');
 
     return {
         statusCode: 200,
