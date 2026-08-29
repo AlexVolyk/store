@@ -1,4 +1,4 @@
-import express from 'express';
+import express from 'express'
 
 import {
     createCategory,
@@ -6,43 +6,47 @@ import {
     getCategories,
     getCategoryById,
     updateCategory,
-} from '../controllers/category.controllers.ts';
-import { validateJWT } from '../middleware/validateJWT.middleware.ts';
-import { validateParams, validateBody } from '../middleware/validate.middleware.ts';
-import { createCategorySchema, updateCategorySchema } from '../validators/category.validators.ts';
-import { idParamsSchema } from '../validators/common.validators.ts';
+} from '../controllers/category.controllers.ts'
+import { validateJWT } from '../middleware/validateJWT.middleware.ts'
+import { requireAdmin } from '../middleware/admin.middleware.ts'
+import { validateBody, validateParams } from '../middleware/validate.middleware.ts'
+import { idOrSlugParamsSchema, idParamsSchema } from '../validators/common.validators.ts'
+import { createCategorySchema, updateCategorySchema } from '../validators/category.validators.ts'
 
-const categoryRouter = express.Router();
+const categoryRouter = express.Router()
 
+// ── Public Category Routes ──
 categoryRouter.get(
-    '/', 
+    '/',
     getCategories
-);
+)
+
 categoryRouter.get(
-    '/:id', 
-    validateParams(idParamsSchema),
+    '/:id',
+    validateParams(idOrSlugParamsSchema),
     getCategoryById
-);
+)
 
-
-categoryRouter.use(validateJWT)
-
+// ── Protected Admin Category Routes ──
+categoryRouter.use(validateJWT, requireAdmin)
 
 categoryRouter.post(
-    '/', 
-    validateBody(createCategorySchema), 
-    createCategory)
-    ;
+    '/',
+    validateBody(createCategorySchema),
+    createCategory
+)
+
 categoryRouter.put(
-    '/:id', 
+    '/:id',
     validateParams(idParamsSchema),
-    validateBody(updateCategorySchema), 
+    validateBody(updateCategorySchema),
     updateCategory
-);
+)
+
 categoryRouter.delete(
-    '/:id', 
+    '/:id',
     validateParams(idParamsSchema),
     deleteCategory
-);
+)
 
-export { categoryRouter };
+export { categoryRouter }

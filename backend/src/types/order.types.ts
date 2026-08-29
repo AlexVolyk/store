@@ -21,6 +21,8 @@ export interface IShippingAddress {
 }
 
 export interface IOrder extends Document {
+    orderNumber: string;
+    trackingNumber?: string;
     user: Types.ObjectId;
     items: IOrderItem[];
     shippingAddress: IShippingAddress;

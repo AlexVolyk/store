@@ -3,7 +3,6 @@ import { ServiceResult } from '../types/service.types.ts';
 import { hashPassword } from '../utils/index.ts';
 import { UpdateUserDTO } from '../validators/user.validator.ts';
 
-
 export const getUsers = async (): Promise<ServiceResult> => {
     const users = await UserModel.find(
         {},
@@ -21,6 +20,22 @@ export const getUsers = async (): Promise<ServiceResult> => {
     };
 };
 
+export const getUserById = async (id: string): Promise<ServiceResult> => {
+    const user = await UserModel.findById(id).select("-password -createdAt -updatedAt");
+
+    if (!user) {
+        return {
+            statusCode: 404,
+            message: "User not found",
+        };
+    }
+
+    return {
+        statusCode: 200,
+        data: user,
+        message: "User profile fetched successfully",
+    };
+};
 
 export const updateUser = async (
     id: string,
@@ -88,4 +103,3 @@ export const deleteUser = async (id: string): Promise<ServiceResult> => {
         message: "User deleted successfully",
     };
 };
-

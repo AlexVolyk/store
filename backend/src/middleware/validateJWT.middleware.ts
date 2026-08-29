@@ -1,47 +1,33 @@
-import { NextFunction, Request, Response } from "express";
-import { env } from "../config/env.ts";
-import { UserModel } from "../models/index.ts";
-import { verifyToken } from "../utils/token.utils.ts";
-import { JwtPayload } from "jsonwebtoken";
-import { invalidToken, sendUnauthorized } from "../utils/controller.utils.ts";
-
-const hasUserId = (payload: string | JwtPayload): payload is JwtPayload & { id: string } => {
-    return typeof payload !== 'string' && typeof payload.id === 'string';
-};
+import type { NextFunction, Request, Response } from 'express'
+import { UserModel } from '../models/index.ts'
+import { verifyToken } from '../utils/token.utils.ts'
+import { invalidToken, sendUnauthorized } from '../utils/controller.utils.ts'
 
 export const validateJWT = async (req: Request, res: Response, next: NextFunction) => {
-    if (req.method == "OPTIONS") {
-        next();
-
-    } else if (
-        req.headers.authorization
-    ) {
-
-        const { authorization } = req.headers;
-
-        const token = authorization?.split(' ')[1];
-
-        const payload = token
-            ? verifyToken(token, env.jwtSecret)
-            : undefined;
-
-        if (payload && hasUserId(payload)) {
-
-            const user = await UserModel.findById(payload.id)
-
-            if (user) {
-                req.user = user;
-                next();
-
-            } else {
-                sendUnauthorized(res)
-            }
-
-        } else {
-            invalidToken(res)
-        }
-
-    } else {
-        sendUnauthorized(res)
+    if (req.method === 'OPTIONS') {
+        return next()
     }
-};
+
+    const authorization = req.headers.authorization
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+        return sendUnauthorized(res)
+    }
+
+    const token = authorization.split(' ')[1]
+    if (!token) {
+        return sendUnauthorized(res)
+    }
+
+    const payload = verifyToken(token)
+    if (!payload) {
+        return invalidToken(res)
+    }
+
+    const user = await UserModel.findById(payload.id)
+    if (!user) {
+        return sendUnauthorized(res)
+    }
+
+    req.user = user
+    next()
+}

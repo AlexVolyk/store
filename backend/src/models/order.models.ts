@@ -73,6 +73,15 @@ const ShippingAddressSchema = new db.Schema(
 
 const OrderSchema = new db.Schema<IOrder>(
     {
+        orderNumber: {
+            type: String,
+            unique: true,
+            default: () => `ORD-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`,
+        },
+        trackingNumber: {
+            type: String,
+            default: null,
+        },
         user: {
             type: db.Schema.Types.ObjectId,
             ref: 'User',
@@ -141,6 +150,9 @@ const OrderSchema = new db.Schema<IOrder>(
         timestamps: true,
     },
 );
+
+// Index for fast query of user's order history sorted by latest first
+OrderSchema.index({ user: 1, createdAt: -1 });
 
 export const OrderModel = db.model('Order', OrderSchema);
 export type OrderSchemaType = InferSchemaType<typeof OrderSchema>;

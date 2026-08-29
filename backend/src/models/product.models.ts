@@ -9,6 +9,14 @@ const ProductSchema = new db.Schema<IProduct>(
             trim: true,
             index: true,
         },
+        slug: {
+            type: String,
+            required: true,
+            unique: true,
+            lowercase: true,
+            trim: true,
+            index: true,
+        },
         description: {
             type: String,
             required: true,
@@ -36,6 +44,7 @@ const ProductSchema = new db.Schema<IProduct>(
         brand: {
             type: String,
             trim: true,
+            index: true,
         },
         category: {
             type: db.Schema.Types.ObjectId,

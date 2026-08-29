@@ -1,5 +1,27 @@
 import { z } from "zod";
 
+export const userAddressSchema = z.object({
+    street: z
+        .string()
+        .trim()
+        .optional(),
+
+    city: z
+        .string()
+        .trim()
+        .optional(),
+
+    postalCode: z
+        .string()
+        .trim()
+        .optional(),
+
+    country: z
+        .string()
+        .trim()
+        .optional(),
+});
+
 export const updateUserSchema = z
     .object({
         firstName: z
@@ -31,6 +53,17 @@ export const updateUserSchema = z
             .url("Avatar must be a valid URL")
             .optional(),
 
+        bio: z
+            .string()
+            .trim()
+            .optional(),
+
+        newsletter: z
+            .boolean()
+            .optional(),
+
+        shippingAddress: userAddressSchema.optional(),
+
         password: z
             .string()
             .min(8, "Password must be at least 8 characters")
@@ -42,6 +75,5 @@ export const updateUserSchema = z
             message: "At least one user field is required for update",
         },
     );
-
 
 export type UpdateUserDTO = z.infer<typeof updateUserSchema>;
