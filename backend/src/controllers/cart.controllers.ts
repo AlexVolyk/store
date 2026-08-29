@@ -3,7 +3,6 @@ import type { Request, Response } from 'express';
 import * as cartService from '../services/cart.services.ts';
 import { getCurrentUserId, getValidateParamsProductId, sendServiceResult } from '../utils/index.ts';
 import { AddCartItemDTO, UpdateCartItemDTO } from '../validators/cart.validators.ts';
-import { IdParamsDTO } from '../validators/common.validators.ts';
 
 export const getCart = async (req: Request, res: Response) => {
         const userId = getCurrentUserId(req);

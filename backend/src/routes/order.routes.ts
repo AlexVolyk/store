@@ -1,4 +1,4 @@
-import express from 'express';
+import express from 'express'
 
 import {
     createOrder,
@@ -7,45 +7,55 @@ import {
     markOrderAsDelivered,
     markOrderAsPaid,
     updateOrderStatus,
-} from '../controllers/order.controllers.ts';
-import { validateJWT } from '../middleware/validateJWT.middleware.ts';
-import { validateParams, validateBody } from '../middleware/validate.middleware.ts';
-import { createOrderSchema, updateOrderStatusSchema } from '../validators/order.validators.ts';
-import { idParamsSchema } from '../validators/common.validators.ts';
+} from '../controllers/order.controllers.ts'
+import { validateJWT } from '../middleware/validateJWT.middleware.ts'
+import { requireAdmin } from '../middleware/admin.middleware.ts'
+import { validateBody, validateParams } from '../middleware/validate.middleware.ts'
+import { idParamsSchema } from '../validators/common.validators.ts'
+import { createOrderSchema, updateOrderStatusSchema } from '../validators/order.validators.ts'
 
-const orderRouter = express.Router();
+const orderRouter = express.Router()
 
-orderRouter.use(validateJWT);
+orderRouter.use(validateJWT)
 
+// ── Protected Customer Order Routes ──
 orderRouter.post(
-    '/', 
-    validateBody(createOrderSchema), 
+    '/',
+    validateBody(createOrderSchema),
     createOrder
-);
+)
+
 orderRouter.get(
-    '/my', 
+    '/my',
     getMyOrders
-);
+)
+
 orderRouter.get(
-    '/:id', 
+    '/:id',
     validateParams(idParamsSchema),
     getOrderById
-);
+)
+
 orderRouter.put(
-    '/:id/pay', 
+    '/:id/pay',
     validateParams(idParamsSchema),
     markOrderAsPaid
-);
+)
+
+// ── Protected Admin Order Routes ──
 orderRouter.put(
     '/:id/deliver',
+    requireAdmin,
     validateParams(idParamsSchema),
     markOrderAsDelivered
-);
-orderRouter.put(
-    '/:id/status', 
-    validateParams(idParamsSchema),
-    validateBody(updateOrderStatusSchema), 
-    updateOrderStatus
-);
+)
 
-export { orderRouter };
+orderRouter.put(
+    '/:id/status',
+    requireAdmin,
+    validateParams(idParamsSchema),
+    validateBody(updateOrderStatusSchema),
+    updateOrderStatus
+)
+
+export { orderRouter }

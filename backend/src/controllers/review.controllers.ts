@@ -1,15 +1,21 @@
-import type { Request, Response, } from "express";
-
+import type { Request, Response } from "express";
 
 import { reviewService } from "../services/index.ts";
 import { getCurrentUserId, getValidateParamsId, getValidateParamsProductId, sendServiceResult } from "../utils/index.ts";
 import { CreateReviewDTO, UpdateReviewDTO } from '../validators/review.validators.ts';
 
+export const getProductReviews = async (req: Request, res: Response) => {
+    const productId = getValidateParamsProductId(req);
+
+    const result = await reviewService.getProductReviews(productId);
+
+    return sendServiceResult(res, result);
+};
+
 export const createProductReview = async (req: Request, res: Response) => {
     const userId = getCurrentUserId(req);
-    const productId = getValidateParamsProductId(req)
-    const body = req.validatedBody as CreateReviewDTO
-    
+    const productId = getValidateParamsProductId(req);
+    const body = req.validatedBody as CreateReviewDTO;
 
     const result = await reviewService.createProductReview(
         userId,
@@ -22,9 +28,8 @@ export const createProductReview = async (req: Request, res: Response) => {
 
 export const updateReview = async (req: Request, res: Response) => {
     const userId = getCurrentUserId(req);
-    const id = getValidateParamsId(req)
-    const body = req.validatedBody as UpdateReviewDTO
-
+    const id = getValidateParamsId(req);
+    const body = req.validatedBody as UpdateReviewDTO;
 
     const result = await reviewService.updateReview(
         id,
@@ -38,7 +43,7 @@ export const updateReview = async (req: Request, res: Response) => {
 
 export const deleteReview = async (req: Request, res: Response) => {
     const userId = getCurrentUserId(req);
-    const id = getValidateParamsId(req)
+    const id = getValidateParamsId(req);
 
     const result = await reviewService.deleteReview(
         id,

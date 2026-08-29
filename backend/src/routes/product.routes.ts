@@ -1,4 +1,4 @@
-import express from 'express';
+import express from 'express'
 
 import {
     createProduct,
@@ -6,50 +6,48 @@ import {
     getProductById,
     getProducts,
     updateProduct,
-} from '../controllers/product.controllers.ts';
-import { createProductReview } from '../controllers/review.controllers.ts';
-import { validateJWT } from '../middleware/validateJWT.middleware.ts';
-import { validateParams, validateBody, validateQuery } from '../middleware/validate.middleware.ts';
-import { createProductSchema, productQuerySchema, updateProductSchema } from '../validators/product.validators.ts';
-import { idParamsSchema, productIdParamsSchema } from '../validators/common.validators.ts';
-import { createReviewSchema } from '../validators/review.validators.ts';
+} from '../controllers/product.controllers.ts'
+import { validateJWT } from '../middleware/validateJWT.middleware.ts'
+import { requireAdmin } from '../middleware/admin.middleware.ts'
+import { validateBody, validateParams, validateQuery } from '../middleware/validate.middleware.ts'
+import { idOrSlugParamsSchema, idParamsSchema } from '../validators/common.validators.ts'
+import { createProductSchema, productQuerySchema, updateProductSchema } from '../validators/product.validators.ts'
 
-const productRouter = express.Router();
+const productRouter = express.Router()
 
+// ── Public Product Discovery Routes ──
 productRouter.get(
-    '/', 
+    '/',
     validateQuery(productQuerySchema),
     getProducts
-);
+)
+
 productRouter.get(
     '/:id',
-    validateParams(idParamsSchema),
+    validateParams(idOrSlugParamsSchema),
     getProductById
-);
+)
 
-productRouter.use(validateJWT);
+// ── Protected Admin Product Routes ──
+productRouter.use(validateJWT, requireAdmin)
 
 productRouter.post(
-    '/', 
+    '/',
     validateBody(createProductSchema),
     createProduct
-);
+)
+
 productRouter.put(
-    '/:id', 
+    '/:id',
     validateParams(idParamsSchema),
     validateBody(updateProductSchema),
     updateProduct
-);
+)
+
 productRouter.delete(
-    '/:id', 
+    '/:id',
     validateParams(idParamsSchema),
     deleteProduct
-);
-productRouter.post(
-    '/:productId/reviews',
-    validateParams(productIdParamsSchema),
-    validateBody(createReviewSchema),
-    createProductReview,
-);
+)
 
-export { productRouter };
+export { productRouter }

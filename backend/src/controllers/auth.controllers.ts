@@ -12,7 +12,7 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-        const body = req.validatedBody as RegisterUserDTO
+        const body = req.validatedBody as LoginUserDTO
         const result = await authService.loginUser(body);
 
         return sendServiceResult(res, result);
