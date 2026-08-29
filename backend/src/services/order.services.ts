@@ -67,6 +67,7 @@ export const createOrder = async (
         user: userId,
         items: orderItems,
         shippingAddress: orderDTO.shippingAddress,
+        notes: orderDTO.notes,
         paymentMethod: orderDTO.paymentMethod,
         itemsPrice,
         shippingPrice,
