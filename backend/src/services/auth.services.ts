@@ -23,7 +23,9 @@ const toSafeUser = (user: SafeUser): SafeUser => ({
     avatar: user.avatar,
 });
 
-export const registerUser = async (registerDTO: RegisterUserDTO): Promise<ServiceResult<SafeUser>> => {
+export const registerUser = async (
+    registerDTO: RegisterUserDTO,
+): Promise<ServiceResult<SafeUser>> => {
     const { firstName, lastName, email, phone, avatar, password } = registerDTO;
 
     const existingUser = await UserModel.findOne({ email });
@@ -34,7 +36,6 @@ export const registerUser = async (registerDTO: RegisterUserDTO): Promise<Servic
             message: 'Email is already in use',
         };
     }
-
 
     const user = await UserModel.create({
         firstName,

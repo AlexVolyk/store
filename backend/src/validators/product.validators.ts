@@ -1,122 +1,97 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const productSchema = z.object({
-    name: z
-        .string()
-        .trim()
-        .min(1, "Product name is required"),
+    name: z.string()
+.trim()
+.min(1, 'Product name is required'),
 
-    slug: z
-        .string()
-        .trim()
-        .toLowerCase()
-        .optional(),
+    slug: z.string()
+.trim()
+.toLowerCase()
+.optional(),
 
-    description: z
-        .string()
-        .trim()
-        .min(1, "Product description is required"),
+    description: z.string()
+.trim()
+.min(1, 'Product description is required'),
 
-    price: z
-        .number()
-        .min(0, "Product price cannot be negative"),
+    price: z.number()
+.min(0, 'Product price cannot be negative'),
 
-    discountPrice: z
-        .number()
-        .min(0, "Discount price cannot be negative")
-        .optional(),
+    discountPrice: z.number()
+.min(0, 'Discount price cannot be negative')
+.optional(),
 
-    stock: z
-        .number()
-        .int("Stock must be an integer")
-        .min(0, "Product stock cannot be negative"),
+    stock: z.number()
+.int('Stock must be an integer')
+.min(0, 'Product stock cannot be negative'),
 
-    images: z
-        .array(z.string())
-        .optional(),
+    images: z.array(z.string())
+.optional(),
 
-    brand: z
-        .string()
-        .trim()
-        .optional(),
+    brand: z.string()
+.trim()
+.optional(),
 
-    category: z
-        .string()
-        .min(1, "Category is required"),
+    category: z.string()
+.min(1, 'Category is required'),
 
-    isActive: z
-        .boolean()
-        .optional(),
+    isActive: z.boolean()
+.optional(),
 });
 
-export const createProductSchema = productSchema
-    .refine(
-        (data) =>
-            data.discountPrice === undefined ||
-            data.discountPrice <= data.price,
-        {
-            message:
-                'Discount price cannot be greater than regular price',
-            path: ['discountPrice'],
-        },
-    );
+export const createProductSchema = productSchema.refine(
+    (data) => data.discountPrice === undefined || data.discountPrice <= data.price,
+    {
+        message: 'Discount price cannot be greater than regular price',
+        path: ['discountPrice'],
+    },
+);
 
-export const updateProductSchema = productSchema 
+export const updateProductSchema = productSchema
     .partial()
-    .refine(
-        (data) => Object.keys(data).length > 0,
-        {
-            message: "At least one product field is required for update",
-        },
-    )
+    .refine((data) => Object.keys(data).length > 0, {
+        message: 'At least one product field is required for update',
+    })
     .refine(
         (data) =>
             data.discountPrice === undefined ||
             data.price === undefined ||
             data.discountPrice <= data.price,
         {
-            message: "Discount price cannot be greater than regular price",
-            path: ["discountPrice"],
+            message: 'Discount price cannot be greater than regular price',
+            path: ['discountPrice'],
         },
     );
 
 export const productQuerySchema = z.object({
-    category: z.string().optional(),
+    category: z.string()
+.optional(),
 
-    search: z.string().trim().optional(),
+    search: z.string()
+.trim()
+.optional(),
 
-    minPrice: z.coerce
-        .number()
-        .min(0)
-        .optional(),
+    minPrice: z.coerce.number()
+.min(0)
+.optional(),
 
-    maxPrice: z.coerce
-        .number()
-        .min(0)
-        .optional(),
+    maxPrice: z.coerce.number()
+.min(0)
+.optional(),
 
-    sort: z
-        .enum([
-            "newest",
-            "oldest",
-            "price_asc",
-            "price_desc",
-            "rating",
-        ])
-        .optional(),
+    sort: z.enum(['newest', 'oldest', 'price_asc', 'price_desc', 'rating'])
+.optional(),
 
-    page: z.coerce
-        .number()
-        .int()
-        .min(1)
-        .default(1),
+    page: z.coerce.number()
+.int()
+.min(1)
+.default(1),
 
-    limit: z.coerce
-        .number()
-        .int()
-        .min(1)
-        .max(100)
-        .default(10),
+    limit: z.coerce.number()
+.int()
+.min(1)
+.max(100)
+.default(10),
 });
 
 export type CreateProductDTO = z.infer<typeof createProductSchema>;

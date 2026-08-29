@@ -1,11 +1,8 @@
-import {
-    OrderModel,
-    ProductModel,
-} from "../models/index.ts";
-import { OrderSchemaType } from "../models/order.models.ts";
+import { OrderModel, ProductModel } from '../models/index.ts';
+import { OrderSchemaType } from '../models/order.models.ts';
 
-import type { ServiceResult } from "../types/index.ts";
-import { CreateOrderDTO, UpdateOrderStatusDTO } from "../validators/order.validators.ts";
+import type { ServiceResult } from '../types/index.ts';
+import { CreateOrderDTO, UpdateOrderStatusDTO } from '../validators/order.validators.ts';
 import { HydratedDocument } from 'mongoose';
 
 type OrderDocument = HydratedDocument<OrderSchemaType>;
@@ -84,47 +81,46 @@ export const createOrder = async (
                 filter: { _id: item.product },
                 update: { $inc: { stock: -item.quantity } },
             },
-        }))
+        })),
     );
 
     return {
         statusCode: 201,
         data: order,
-        message: "Order created successfully",
+        message: 'Order created successfully',
     };
 };
 
 export const getMyOrders = async (userId: string): Promise<ServiceResult> => {
     const orders = await OrderModel.find({
         user: userId,
-    }).sort({
+    })
+.sort({
         createdAt: -1,
     });
 
     return {
         statusCode: 200,
         data: orders,
-        message: "Orders fetched successfully",
+        message: 'Orders fetched successfully',
     };
 };
 
 export const getOrderById = async (id: string): Promise<ServiceResult<OrderDocument>> => {
-    const order = await OrderModel.findById(id).populate(
-        "user",
-        "firstName lastName email role",
-    );
+    const order = await OrderModel.findById(id)
+.populate('user', 'firstName lastName email role');
 
     if (!order) {
         return {
             statusCode: 404,
-            message: "Order not found",
+            message: 'Order not found',
         };
     }
 
     return {
         statusCode: 200,
         data: order,
-        message: "Order fetched successfully",
+        message: 'Order fetched successfully',
     };
 };
 
@@ -132,7 +128,7 @@ export const markOrderAsPaid = async (id: string): Promise<ServiceResult> => {
     const order = await OrderModel.findByIdAndUpdate(
         id,
         {
-            paymentStatus: "paid",
+            paymentStatus: 'paid',
             paidAt: new Date(),
         },
         {
@@ -144,14 +140,14 @@ export const markOrderAsPaid = async (id: string): Promise<ServiceResult> => {
     if (!order) {
         return {
             statusCode: 404,
-            message: "Order not found",
+            message: 'Order not found',
         };
     }
 
     return {
         statusCode: 200,
         data: order,
-        message: "Order marked as paid",
+        message: 'Order marked as paid',
     };
 };
 
@@ -159,7 +155,7 @@ export const markOrderAsDelivered = async (id: string): Promise<ServiceResult> =
     const order = await OrderModel.findByIdAndUpdate(
         id,
         {
-            orderStatus: "delivered",
+            orderStatus: 'delivered',
             deliveredAt: new Date(),
         },
         {
@@ -171,14 +167,14 @@ export const markOrderAsDelivered = async (id: string): Promise<ServiceResult> =
     if (!order) {
         return {
             statusCode: 404,
-            message: "Order not found",
+            message: 'Order not found',
         };
     }
 
     return {
         statusCode: 200,
         data: order,
-        message: "Order marked as delivered",
+        message: 'Order marked as delivered',
     };
 };
 
@@ -191,7 +187,7 @@ export const updateOrderStatus = async (
     if (!existingOrder) {
         return {
             statusCode: 404,
-            message: "Order not found",
+            message: 'Order not found',
         };
     }
 
@@ -199,31 +195,31 @@ export const updateOrderStatus = async (
     const newStatus = orderDTO.orderStatus;
 
     // 🚀 If order is newly cancelled, restore product inventory in ONE single bulkWrite
-    if (previousStatus !== "cancelled" && newStatus === "cancelled") {
+    if (previousStatus !== 'cancelled' && newStatus === 'cancelled') {
         await ProductModel.bulkWrite(
             existingOrder.items.map((item) => ({
                 updateOne: {
                     filter: { _id: item.product },
                     update: { $inc: { stock: item.quantity } },
                 },
-            }))
+            })),
         );
     }
 
     // 🚀 If a previously cancelled order is reopened, re-decrement stock in ONE single bulkWrite
-    if (previousStatus === "cancelled" && newStatus !== "cancelled") {
+    if (previousStatus === 'cancelled' && newStatus !== 'cancelled') {
         await ProductModel.bulkWrite(
             existingOrder.items.map((item) => ({
                 updateOne: {
                     filter: { _id: item.product },
                     update: { $inc: { stock: -item.quantity } },
                 },
-            }))
+            })),
         );
     }
 
     existingOrder.orderStatus = newStatus;
-    if (newStatus === "delivered" && !existingOrder.deliveredAt) {
+    if (newStatus === 'delivered' && !existingOrder.deliveredAt) {
         existingOrder.deliveredAt = new Date();
     }
 
@@ -232,6 +228,6 @@ export const updateOrderStatus = async (
     return {
         statusCode: 200,
         data: existingOrder,
-        message: "Order status updated successfully",
+        message: 'Order status updated successfully',
     };
 };

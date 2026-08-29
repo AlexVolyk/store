@@ -1,6 +1,6 @@
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
 
-dotenv.config()
+dotenv.config();
 
 export const env = {
     nodeEnv: process.env.NODE_ENV ?? 'development',
@@ -9,4 +9,4 @@ export const env = {
     clientUrl: process.env.CLIENT_URL ?? 'http://localhost:3000',
     jwtSecret: process.env.JWT_SECRET ?? '',
     redisUrl: process.env.REDIS_URL,
-}
+};

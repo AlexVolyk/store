@@ -1,4 +1,4 @@
-import express from 'express'
+import express from 'express';
 
 import {
     createProduct,
@@ -6,48 +6,36 @@ import {
     getProductById,
     getProducts,
     updateProduct,
-} from '../controllers/product.controllers.ts'
-import { validateJWT } from '../middleware/validateJWT.middleware.ts'
-import { requireAdmin } from '../middleware/admin.middleware.ts'
-import { validateBody, validateParams, validateQuery } from '../middleware/validate.middleware.ts'
-import { idOrSlugParamsSchema, idParamsSchema } from '../validators/common.validators.ts'
-import { createProductSchema, productQuerySchema, updateProductSchema } from '../validators/product.validators.ts'
+} from '../controllers/product.controllers.ts';
+import { validateJWT } from '../middleware/validateJWT.middleware.ts';
+import { requireAdmin } from '../middleware/admin.middleware.ts';
+import { validateBody, validateParams, validateQuery } from '../middleware/validate.middleware.ts';
+import { idOrSlugParamsSchema, idParamsSchema } from '../validators/common.validators.ts';
+import {
+    createProductSchema,
+    productQuerySchema,
+    updateProductSchema,
+} from '../validators/product.validators.ts';
 
-const productRouter = express.Router()
+const productRouter = express.Router();
 
 // ── Public Product Discovery Routes ──
-productRouter.get(
-    '/',
-    validateQuery(productQuerySchema),
-    getProducts
-)
+productRouter.get('/', validateQuery(productQuerySchema), getProducts);
 
-productRouter.get(
-    '/:id',
-    validateParams(idOrSlugParamsSchema),
-    getProductById
-)
+productRouter.get('/:id', validateParams(idOrSlugParamsSchema), getProductById);
 
 // ── Protected Admin Product Routes ──
-productRouter.use(validateJWT, requireAdmin)
+productRouter.use(validateJWT, requireAdmin);
 
-productRouter.post(
-    '/',
-    validateBody(createProductSchema),
-    createProduct
-)
+productRouter.post('/', validateBody(createProductSchema), createProduct);
 
 productRouter.put(
     '/:id',
     validateParams(idParamsSchema),
     validateBody(updateProductSchema),
-    updateProduct
-)
+    updateProduct,
+);
 
-productRouter.delete(
-    '/:id',
-    validateParams(idParamsSchema),
-    deleteProduct
-)
+productRouter.delete('/:id', validateParams(idParamsSchema), deleteProduct);
 
-export { productRouter }
+export { productRouter };

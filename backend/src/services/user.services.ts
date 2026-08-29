@@ -16,31 +16,29 @@ export const getUsers = async (): Promise<ServiceResult> => {
     return {
         statusCode: 200,
         data: users,
-        message: "Users fetched successfully",
+        message: 'Users fetched successfully',
     };
 };
 
 export const getUserById = async (id: string): Promise<ServiceResult> => {
-    const user = await UserModel.findById(id).select("-password -createdAt -updatedAt");
+    const user = await UserModel.findById(id)
+.select('-password -createdAt -updatedAt');
 
     if (!user) {
         return {
             statusCode: 404,
-            message: "User not found",
+            message: 'User not found',
         };
     }
 
     return {
         statusCode: 200,
         data: user,
-        message: "User profile fetched successfully",
+        message: 'User profile fetched successfully',
     };
 };
 
-export const updateUser = async (
-    id: string,
-    userDTO: UpdateUserDTO,
-): Promise<ServiceResult> => {
+export const updateUser = async (id: string, userDTO: UpdateUserDTO): Promise<ServiceResult> => {
     if (userDTO.email) {
         const existingUser = await UserModel.findOne({
             _id: { $ne: id },
@@ -50,7 +48,7 @@ export const updateUser = async (
         if (existingUser) {
             return {
                 statusCode: 409,
-                message: "Email is already in use",
+                message: 'Email is already in use',
             };
         }
     }
@@ -59,31 +57,28 @@ export const updateUser = async (
         ...userDTO,
         ...(userDTO.password
             ? {
-                password: hashPassword(userDTO.password),
-            }
+                  password: hashPassword(userDTO.password),
+              }
             : {}),
     };
 
-    const updatedUser = await UserModel.findByIdAndUpdate(
-        id,
-        updateUserData,
-        {
-            new: true,
-            runValidators: true,
-        },
-    ).select("-password -createdAt -updatedAt");
+    const updatedUser = await UserModel.findByIdAndUpdate(id, updateUserData, {
+        new: true,
+        runValidators: true,
+    })
+.select('-password -createdAt -updatedAt');
 
     if (!updatedUser) {
         return {
             statusCode: 404,
-            message: "User not found",
+            message: 'User not found',
         };
     }
 
     return {
         statusCode: 200,
         data: updatedUser,
-        message: "User updated successfully",
+        message: 'User updated successfully',
     };
 };
 
@@ -93,13 +88,13 @@ export const deleteUser = async (id: string): Promise<ServiceResult> => {
     if (!deletedUser) {
         return {
             statusCode: 404,
-            message: "User not found",
+            message: 'User not found',
         };
     }
 
     return {
         statusCode: 200,
         data: deletedUser,
-        message: "User deleted successfully",
+        message: 'User deleted successfully',
     };
 };

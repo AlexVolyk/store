@@ -2,11 +2,7 @@ import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { app } from '../src/app.ts';
-import {
-    CategoryModel,
-    ProductModel,
-    UserModel,
-} from '../src/models/index.ts';
+import { CategoryModel, ProductModel, UserModel } from '../src/models/index.ts';
 import { getToken } from '../src/utils/index.ts';
 
 describe('Product API', () => {
@@ -33,10 +29,7 @@ describe('Product API', () => {
         });
     };
 
-    const createProduct = async (
-        categoryId: string,
-        overrides = {},
-    ) => {
+    const createProduct = async (categoryId: string, overrides = {}) => {
         return ProductModel.create({
             name: `Test Product-${Date.now()}`,
             description: 'Test product description',
@@ -80,14 +73,16 @@ describe('Product API', () => {
             });
 
             const response = await request(app)
-                .get('/api/products');
+.get('/api/products');
 
+            expect(response.status)
+.toBe(200);
 
-            expect(response.status).toBe(200);
+            expect(response.body.data)
+.toHaveLength(2);
 
-            expect(response.body.data).toHaveLength(2);
-
-            expect(response.body.pagination).toMatchObject({
+            expect(response.body.pagination)
+.toMatchObject({
                 page: 1,
                 limit: 10,
                 total: 2,
@@ -95,19 +90,21 @@ describe('Product API', () => {
             });
 
             expect(response.body.message)
-                .toBe('Products fetched successfully');
+.toBe('Products fetched successfully');
         });
 
         it('should return an empty array when there are no products', async () => {
             const response = await request(app)
-                .get('/api/products');
+.get('/api/products');
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toEqual([]);
+            expect(response.body.data)
+.toEqual([]);
 
             expect(response.body.message)
-                .toBe('No products yet');
+.toBe('No products yet');
         });
 
         it('should exclude inactive products', async () => {
@@ -124,14 +121,16 @@ describe('Product API', () => {
             });
 
             const response = await request(app)
-                .get('/api/products');
+.get('/api/products');
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toHaveLength(1);
+            expect(response.body.data)
+.toHaveLength(1);
 
             expect(response.body.data[0].name)
-                .toBe('Active Product');
+.toBe('Active Product');
         });
 
         it('should filter products by category', async () => {
@@ -155,12 +154,14 @@ describe('Product API', () => {
                 .get('/api/products')
                 .query({ category: electronics.id });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toHaveLength(1);
+            expect(response.body.data)
+.toHaveLength(1);
 
             expect(response.body.data[0].name)
-                .toBe('Laptop');
+.toBe('Laptop');
         });
 
         it('should search products by name', async () => {
@@ -175,15 +176,17 @@ describe('Product API', () => {
             });
 
             const response = await request(app)
-                .get('/api/products')
-                .query({ search: 'laptop' });
+.get('/api/products')
+.query({ search: 'laptop' });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toHaveLength(1);
+            expect(response.body.data)
+.toHaveLength(1);
 
             expect(response.body.data[0].name)
-                .toBe('Gaming Laptop');
+.toBe('Gaming Laptop');
         });
 
         it('should filter products by price range', async () => {
@@ -208,12 +211,14 @@ describe('Product API', () => {
                 .get('/api/products')
                 .query({ minPrice: 100, maxPrice: 200 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toHaveLength(1);
+            expect(response.body.data)
+.toHaveLength(1);
 
             expect(response.body.data[0].name)
-                .toBe('Mid Item');
+.toBe('Mid Item');
         });
 
         it('should sort products by price ascending', async () => {
@@ -230,14 +235,17 @@ describe('Product API', () => {
             });
 
             const response = await request(app)
-                .get('/api/products')
-                .query({ sort: 'price_asc' });
+.get('/api/products')
+.query({ sort: 'price_asc' });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data[0].name).toBe('Cheap');
+            expect(response.body.data[0].name)
+.toBe('Cheap');
 
-            expect(response.body.data[1].name).toBe('Expensive');
+            expect(response.body.data[1].name)
+.toBe('Expensive');
         });
 
         it('should paginate products', async () => {
@@ -250,14 +258,17 @@ describe('Product API', () => {
             }
 
             const response = await request(app)
-                .get('/api/products')
-                .query({ page: 2, limit: 1 });
+.get('/api/products')
+.query({ page: 2, limit: 1 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toHaveLength(1);
+            expect(response.body.data)
+.toHaveLength(1);
 
-            expect(response.body.pagination).toMatchObject({
+            expect(response.body.pagination)
+.toMatchObject({
                 page: 2,
                 limit: 1,
                 total: 3,
@@ -278,39 +289,44 @@ describe('Product API', () => {
             });
 
             const response = await request(app)
-                .get(`/api/products/${product.id}`);
+.get(`/api/products/${product.id}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 name: 'Laptop',
                 price: 999,
             });
 
-            expect(response.body.data.category).toMatchObject({
+            expect(response.body.data.category)
+.toMatchObject({
                 name: 'Electronics',
                 description: 'Electronic products',
             });
 
             expect(response.body.message)
-                .toBe('Product fetched successfully');
+.toBe('Product fetched successfully');
         });
 
         it('should return 404 for a non-existing product', async () => {
             const response = await request(app)
-                .get('/api/products/507f1f77bcf86cd799439011');
+.get('/api/products/507f1f77bcf86cd799439011');
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Product not found');
+.toBe('Product not found');
         });
 
         it('should reject an invalid product id', async () => {
             const response = await request(app)
-                .get('/api/products/invalid-id');
+.get('/api/products/invalid-id');
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 
@@ -324,9 +340,11 @@ describe('Product API', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send(validProductPayload(category.id));
 
-            expect(response.status).toBe(201);
+            expect(response.status)
+.toBe(201);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 name: 'New Product',
                 description: 'A brand new product',
                 price: 99.99,
@@ -335,7 +353,7 @@ describe('Product API', () => {
             });
 
             expect(response.body.message)
-                .toBe('Product created successfully');
+.toBe('Product created successfully');
 
             const product = await ProductModel.findOne({
                 name: 'New Product',
@@ -351,7 +369,8 @@ describe('Product API', () => {
                 .post('/api/products')
                 .send(validProductPayload(category.id));
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should reject duplicate product names', async () => {
@@ -371,10 +390,11 @@ describe('Product API', () => {
                     name: 'Unique Product',
                 });
 
-            expect(response.status).toBe(409);
+            expect(response.status)
+.toBe(409);
 
             expect(response.body.message)
-                .toBe('Product with this name already exists');
+.toBe('Product with this name already exists');
         });
 
         it('should return 404 when category does not exist', async () => {
@@ -385,10 +405,11 @@ describe('Product API', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send(validProductPayload('507f1f77bcf86cd799439011'));
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Category not found');
+.toBe('Category not found');
         });
 
         it('should trim the product name', async () => {
@@ -403,10 +424,11 @@ describe('Product API', () => {
                     name: '  Trimmed Product  ',
                 });
 
-            expect(response.status).toBe(201);
+            expect(response.status)
+.toBe(201);
 
             expect(response.body.data.name)
-                .toBe('Trimmed Product');
+.toBe('Trimmed Product');
         });
 
         it('should reject invalid product data', async () => {
@@ -424,7 +446,8 @@ describe('Product API', () => {
                     category: category.id,
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
 
         it('should reject discount price greater than regular price', async () => {
@@ -440,7 +463,8 @@ describe('Product API', () => {
                     discountPrice: 100,
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 
@@ -458,22 +482,22 @@ describe('Product API', () => {
                     price: 149.99,
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 name: 'Updated Product',
                 price: 149.99,
             });
 
             expect(response.body.message)
-                .toBe('Product updated successfully');
+.toBe('Product updated successfully');
 
-            const updatedProduct = await ProductModel.findById(
-                product.id,
-            );
+            const updatedProduct = await ProductModel.findById(product.id);
 
             expect(updatedProduct?.name)
-                .toBe('Updated Product');
+.toBe('Updated Product');
         });
 
         it('should reject unauthenticated requests', async () => {
@@ -481,12 +505,13 @@ describe('Product API', () => {
             const product = await createProduct(category.id);
 
             const response = await request(app)
-                .put(`/api/products/${product.id}`)
-                .send({
-                    name: 'Updated Product',
-                });
+.put(`/api/products/${product.id}`)
+.send({
+                name: 'Updated Product',
+            });
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should return 404 for a non-existing product', async () => {
@@ -499,10 +524,11 @@ describe('Product API', () => {
                     name: 'Updated Product',
                 });
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Product not found');
+.toBe('Product not found');
         });
 
         it('should reject duplicate product names', async () => {
@@ -525,10 +551,11 @@ describe('Product API', () => {
                     name: 'Existing Product',
                 });
 
-            expect(response.status).toBe(409);
+            expect(response.status)
+.toBe(409);
 
             expect(response.body.message)
-                .toBe('Product with this name already exists');
+.toBe('Product with this name already exists');
         });
 
         it('should return 404 when updating to a non-existing category', async () => {
@@ -543,10 +570,11 @@ describe('Product API', () => {
                     category: '507f1f77bcf86cd799439011',
                 });
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Category not found');
+.toBe('Category not found');
         });
 
         it('should reject an empty update body', async () => {
@@ -559,7 +587,8 @@ describe('Product API', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send({});
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
 
         it('should reject an invalid product id', async () => {
@@ -572,7 +601,8 @@ describe('Product API', () => {
                     name: 'Updated',
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 
@@ -586,16 +616,16 @@ describe('Product API', () => {
                 .delete(`/api/products/${product.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
             expect(response.body.message)
-                .toBe('Product deleted successfully');
+.toBe('Product deleted successfully');
 
-            const deletedProduct = await ProductModel.findById(
-                product.id,
-            );
+            const deletedProduct = await ProductModel.findById(product.id);
 
-            expect(deletedProduct).toBeNull();
+            expect(deletedProduct)
+.toBeNull();
         });
 
         it('should reject unauthenticated requests', async () => {
@@ -603,9 +633,10 @@ describe('Product API', () => {
             const product = await createProduct(category.id);
 
             const response = await request(app)
-                .delete(`/api/products/${product.id}`);
+.delete(`/api/products/${product.id}`);
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should return 404 for a non-existing product', async () => {
@@ -615,10 +646,11 @@ describe('Product API', () => {
                 .delete('/api/products/507f1f77bcf86cd799439011')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Product not found');
+.toBe('Product not found');
         });
 
         it('should reject an invalid product id', async () => {
@@ -628,8 +660,8 @@ describe('Product API', () => {
                 .delete('/api/products/invalid-id')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
-
 });

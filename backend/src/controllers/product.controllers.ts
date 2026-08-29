@@ -1,11 +1,16 @@
-import type { Request, Response, } from "express";
+import type { Request, Response } from 'express';
 
-import { productService } from "../services/index.ts";
-import { getValidateParamsId, getValidateProductQuery, sendServiceResult, sendServiceResultProduct } from "../utils/index.ts";
-import { CreateProductDTO, UpdateProductDTO } from "../validators/product.validators.ts";
+import { productService } from '../services/index.ts';
+import {
+    getValidateParamsId,
+    getValidateProductQuery,
+    sendServiceResult,
+    sendServiceResultProduct,
+} from '../utils/index.ts';
+import { CreateProductDTO, UpdateProductDTO } from '../validators/product.validators.ts';
 
 export const getProducts = async (req: Request, res: Response) => {
-    const query = getValidateProductQuery(req); 
+    const query = getValidateProductQuery(req);
 
     const result = await productService.getProducts(query);
 
@@ -13,7 +18,7 @@ export const getProducts = async (req: Request, res: Response) => {
 };
 
 export const getProductById = async (req: Request, res: Response) => {
-    const id = getValidateParamsId(req)
+    const id = getValidateParamsId(req);
 
     const result = await productService.getProductById(id);
 
@@ -21,7 +26,7 @@ export const getProductById = async (req: Request, res: Response) => {
 };
 
 export const createProduct = async (req: Request, res: Response) => {
-    const body = req.validatedBody as CreateProductDTO
+    const body = req.validatedBody as CreateProductDTO;
 
     const result = await productService.createProduct(body);
 
@@ -29,8 +34,8 @@ export const createProduct = async (req: Request, res: Response) => {
 };
 
 export const updateProduct = async (req: Request, res: Response) => {
-    const id = getValidateParamsId(req)
-    const body = req.validatedBody as UpdateProductDTO
+    const id = getValidateParamsId(req);
+    const body = req.validatedBody as UpdateProductDTO;
 
     const result = await productService.updateProduct(id, body);
 
@@ -38,7 +43,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 };
 
 export const deleteProduct = async (req: Request, res: Response) => {
-    const id = getValidateParamsId(req)
+    const id = getValidateParamsId(req);
 
     const result = await productService.deleteProduct(id);
 

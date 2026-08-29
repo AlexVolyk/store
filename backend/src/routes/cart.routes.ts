@@ -1,4 +1,4 @@
-import express from 'express'
+import express from 'express';
 
 import {
     addCartItem,
@@ -6,44 +6,30 @@ import {
     deleteCartItem,
     getCart,
     updateCartItem,
-} from '../controllers/cart.controllers.ts'
-import { validateJWT } from '../middleware/validateJWT.middleware.ts'
-import { validateBody, validateParams } from '../middleware/validate.middleware.ts'
-import { productIdParamsSchema } from '../validators/common.validators.ts'
-import { addCartItemSchema, updateCartItemSchema } from '../validators/cart.validators.ts'
+} from '../controllers/cart.controllers.ts';
+import { validateJWT } from '../middleware/validateJWT.middleware.ts';
+import { validateBody, validateParams } from '../middleware/validate.middleware.ts';
+import { productIdParamsSchema } from '../validators/common.validators.ts';
+import { addCartItemSchema, updateCartItemSchema } from '../validators/cart.validators.ts';
 
-const cartRouter = express.Router()
+const cartRouter = express.Router();
 
 // ── Protected Cart Routes ──
-cartRouter.use(validateJWT)
+cartRouter.use(validateJWT);
 
-cartRouter.get(
-    '/',
-    getCart
-)
+cartRouter.get('/', getCart);
 
-cartRouter.post(
-    '/items',
-    validateBody(addCartItemSchema),
-    addCartItem
-)
+cartRouter.post('/items', validateBody(addCartItemSchema), addCartItem);
 
 cartRouter.patch(
     '/items/:productId',
     validateParams(productIdParamsSchema),
     validateBody(updateCartItemSchema),
-    updateCartItem
-)
+    updateCartItem,
+);
 
-cartRouter.delete(
-    '/items/:productId',
-    validateParams(productIdParamsSchema),
-    deleteCartItem
-)
+cartRouter.delete('/items/:productId', validateParams(productIdParamsSchema), deleteCartItem);
 
-cartRouter.delete(
-    '/',
-    clearCart
-)
+cartRouter.delete('/', clearCart);
 
-export { cartRouter }
+export { cartRouter };

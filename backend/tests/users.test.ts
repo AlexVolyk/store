@@ -36,15 +36,20 @@ describe('User API', () => {
             });
 
             const response = await request(app)
-                .get('/api/users');
+.get('/api/users');
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body).toHaveProperty('data');
-            expect(Array.isArray(response.body.data)).toBe(true);
-            expect(response.body.data).toHaveLength(2);
+            expect(response.body)
+.toHaveProperty('data');
+            expect(Array.isArray(response.body.data))
+.toBe(true);
+            expect(response.body.data)
+.toHaveLength(2);
 
-            expect(response.body.data).toEqual(
+            expect(response.body.data)
+.toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
                         firstName: 'John',
@@ -59,19 +64,19 @@ describe('User API', () => {
                 ]),
             );
 
-            response.body.data.forEach(
-                (user: Record<string, unknown>) => {
-                    expect(user).not.toHaveProperty('password');
-                },
-            );
+            response.body.data.forEach((user: Record<string, unknown>) => {
+                expect(user).not.toHaveProperty('password');
+            });
         });
 
         it('should return an empty array when there are no users', async () => {
             const response = await request(app)
-                .get('/api/users');
+.get('/api/users');
 
-            expect(response.status).toBe(200);
-            expect(response.body.data).toEqual([]);
+            expect(response.status)
+.toBe(200);
+            expect(response.body.data)
+.toEqual([]);
         });
     });
 
@@ -79,11 +84,7 @@ describe('User API', () => {
         it('should reject an expired token', async () => {
             const user = await createUser();
 
-            const expiredToken = jwt.sign(
-                { id: user.id },
-                env.jwtSecret,
-                { expiresIn: -1 },
-            );
+            const expiredToken = jwt.sign({ id: user.id }, env.jwtSecret, { expiresIn: -1 });
 
             const response = await request(app)
                 .put(`/api/users/update/${user.id}`)
@@ -92,11 +93,12 @@ describe('User API', () => {
                     firstName: 'Updated',
                 });
 
-            expect(response.status).toBe(401);
-            expect(response.body.message).toBe('Invalid token');
+            expect(response.status)
+.toBe(401);
+            expect(response.body.message)
+.toBe('Invalid token');
         });
     });
-
 
     describe('PUT /api/users/update/:id', () => {
         it('should update a user', async () => {
@@ -112,9 +114,11 @@ describe('User API', () => {
                     lastName: 'User',
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 firstName: 'Updated',
                 lastName: 'User',
                 email: 'john@test.com',
@@ -124,20 +128,23 @@ describe('User API', () => {
 
             const updatedUser = await UserModel.findById(currentUser.id);
 
-            expect(updatedUser?.firstName).toBe('Updated');
-            expect(updatedUser?.lastName).toBe('User');
+            expect(updatedUser?.firstName)
+.toBe('Updated');
+            expect(updatedUser?.lastName)
+.toBe('User');
         });
 
         it('should reject unauthenticated requests', async () => {
             const user = await createUser();
 
             const response = await request(app)
-                .put(`/api/users/update/${user.id}`)
-                .send({
-                    firstName: 'Updated',
-                });
+.put(`/api/users/update/${user.id}`)
+.send({
+                firstName: 'Updated',
+            });
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should reject invalid update data', async () => {
@@ -152,7 +159,8 @@ describe('User API', () => {
                     firstName: '',
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
 
         it('should return 404 for a non-existing user', async () => {
@@ -167,7 +175,8 @@ describe('User API', () => {
                     firstName: 'Updated',
                 });
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
         });
     });
 
@@ -181,24 +190,25 @@ describe('User API', () => {
                 .delete(`/api/users/delete/${user.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body).toHaveProperty(
-                'message',
-                'User deleted successfully',
-            );
+            expect(response.body)
+.toHaveProperty('message', 'User deleted successfully');
 
             const deletedUser = await UserModel.findById(user.id);
 
-            expect(deletedUser).toBeNull();
+            expect(deletedUser)
+.toBeNull();
         });
 
         it('should reject unauthenticated requests', async () => {
             const user = await createUser();
 
             const response = await request(app)
-                .delete(`/api/users/delete/${user.id}`);
-            expect(response.status).toBe(401);
+.delete(`/api/users/delete/${user.id}`);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should return 404 for a non-existing user', async () => {
@@ -210,7 +220,8 @@ describe('User API', () => {
                 .delete('/api/users/delete/507f1f77bcf86cd799439011')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
         });
     });
 });

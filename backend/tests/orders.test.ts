@@ -2,12 +2,7 @@ import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { app } from '../src/app.ts';
-import {
-    CategoryModel,
-    OrderModel,
-    ProductModel,
-    UserModel,
-} from '../src/models/index.ts';
+import { CategoryModel, OrderModel, ProductModel, UserModel } from '../src/models/index.ts';
 import { getToken } from '../src/utils/index.ts';
 
 describe('Order API', () => {
@@ -42,10 +37,7 @@ describe('Order API', () => {
         });
     };
 
-    const createProduct = async (
-        categoryId: string,
-        overrides = {},
-    ) => {
+    const createProduct = async (categoryId: string, overrides = {}) => {
         return ProductModel.create({
             name: 'Test Product',
             description: 'Test product description',
@@ -80,11 +72,7 @@ describe('Order API', () => {
         taxPrice: 5,
     });
 
-    const createOrderInDb = async (
-        userId: string,
-        productId: string,
-        overrides = {},
-    ) => {
+    const createOrderInDb = async (userId: string, productId: string, overrides = {}) => {
         return OrderModel.create({
             user: userId,
             items: [
@@ -106,10 +94,8 @@ describe('Order API', () => {
         });
     };
 
-    const getAuthToken = async (
-        user?: Awaited<ReturnType<typeof createUser>>,
-    ) => {
-        const authUser = user ?? await createUser();
+    const getAuthToken = async (user?: Awaited<ReturnType<typeof createUser>>) => {
+        const authUser = user ?? (await createUser());
 
         return {
             user: authUser,
@@ -131,9 +117,11 @@ describe('Order API', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send(validOrderPayload(product.id));
 
-            expect(response.status).toBe(201);
+            expect(response.status)
+.toBe(201);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 user: user.id,
                 itemsPrice: 160,
                 shippingPrice: 10,
@@ -144,16 +132,18 @@ describe('Order API', () => {
                 orderStatus: 'pending',
             });
 
-            expect(response.body.data.items).toHaveLength(1);
+            expect(response.body.data.items)
+.toHaveLength(1);
 
-            expect(response.body.data.items[0]).toMatchObject({
+            expect(response.body.data.items[0])
+.toMatchObject({
                 name: 'Test Product',
                 price: 80,
                 quantity: 2,
             });
 
             expect(response.body.message)
-                .toBe('Order created successfully');
+.toBe('Order created successfully');
 
             const order = await OrderModel.findOne({
                 user: user.id,
@@ -170,7 +160,8 @@ describe('Order API', () => {
                 .post('/api/orders')
                 .send(validOrderPayload(product.id));
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should return 400 when a product does not exist', async () => {
@@ -183,10 +174,11 @@ describe('Order API', () => {
                     ...validOrderPayload('507f1f77bcf86cd799439011'),
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
 
             expect(response.body.message)
-                .toContain('Product not found');
+.toContain('Product not found');
         });
 
         it('should return 422 when a product is not active', async () => {
@@ -201,10 +193,11 @@ describe('Order API', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send(validOrderPayload(product.id));
 
-            expect(response.status).toBe(422);
+            expect(response.status)
+.toBe(422);
 
             expect(response.body.message)
-                .toContain('Product is not available');
+.toContain('Product is not available');
         });
 
         it('should return 422 when there is not enough stock', async () => {
@@ -219,10 +212,11 @@ describe('Order API', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send(validOrderPayload(product.id));
 
-            expect(response.status).toBe(422);
+            expect(response.status)
+.toBe(422);
 
             expect(response.body.message)
-                .toContain('Not enough stock');
+.toContain('Not enough stock');
         });
 
         it('should reject invalid order data', async () => {
@@ -237,7 +231,8 @@ describe('Order API', () => {
                     paymentMethod: '',
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 
@@ -249,12 +244,14 @@ describe('Order API', () => {
                 .get('/api/orders/my')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toEqual([]);
+            expect(response.body.data)
+.toEqual([]);
 
             expect(response.body.message)
-                .toBe('Orders fetched successfully');
+.toBe('Orders fetched successfully');
         });
 
         it('should return only the authenticated user orders', async () => {
@@ -270,19 +267,22 @@ describe('Order API', () => {
                 .get('/api/orders/my')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toHaveLength(1);
+            expect(response.body.data)
+.toHaveLength(1);
 
             expect(response.body.data[0].user.toString())
-                .toBe(user.id);
+.toBe(user.id);
         });
 
         it('should reject unauthenticated requests', async () => {
             const response = await request(app)
-                .get('/api/orders/my');
+.get('/api/orders/my');
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
     });
 
@@ -297,16 +297,17 @@ describe('Order API', () => {
                 .get(`/api/orders/${order.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
+            expect(response.status)
+.toBe(200);
 
-            expect(response.status).toBe(200);
-
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 itemsPrice: 200,
                 totalPrice: 215,
             });
 
             expect(response.body.message)
-                .toBe('Order fetched successfully');
+.toBe('Order fetched successfully');
         });
 
         it('should allow an admin to view any order', async () => {
@@ -321,7 +322,8 @@ describe('Order API', () => {
                 .get(`/api/orders/${order.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
         });
 
         it('should reject access from a non-owner user', async () => {
@@ -335,7 +337,8 @@ describe('Order API', () => {
                 .get(`/api/orders/${order.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(403);
+            expect(response.status)
+.toBe(403);
         });
 
         it('should return 404 for a non-existing order', async () => {
@@ -345,10 +348,11 @@ describe('Order API', () => {
                 .get('/api/orders/507f1f77bcf86cd799439011')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Order not found');
+.toBe('Order not found');
         });
 
         it('should reject an invalid order id', async () => {
@@ -358,7 +362,8 @@ describe('Order API', () => {
                 .get('/api/orders/invalid-id')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 
@@ -373,16 +378,19 @@ describe('Order API', () => {
                 .put(`/api/orders/${order.id}/pay`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 paymentStatus: 'paid',
             });
 
-            expect(response.body.data.paidAt).toBeDefined();
+            expect(response.body.data.paidAt)
+.toBeDefined();
 
             expect(response.body.message)
-                .toBe('Order marked as paid');
+.toBe('Order marked as paid');
         });
 
         it('should return 400 when the order is already paid', async () => {
@@ -398,10 +406,11 @@ describe('Order API', () => {
                 .put(`/api/orders/${order.id}/pay`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
 
             expect(response.body.message)
-                .toBe('Order is already paid');
+.toBe('Order is already paid');
         });
 
         it('should reject access from a non-owner user', async () => {
@@ -415,7 +424,8 @@ describe('Order API', () => {
                 .put(`/api/orders/${order.id}/pay`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(403);
+            expect(response.status)
+.toBe(403);
         });
 
         it('should return 404 for a non-existing order', async () => {
@@ -425,7 +435,8 @@ describe('Order API', () => {
                 .put('/api/orders/507f1f77bcf86cd799439011/pay')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
         });
     });
 
@@ -442,16 +453,19 @@ describe('Order API', () => {
                 .put(`/api/orders/${order.id}/deliver`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 orderStatus: 'delivered',
             });
 
-            expect(response.body.data.deliveredAt).toBeDefined();
+            expect(response.body.data.deliveredAt)
+.toBeDefined();
 
             expect(response.body.message)
-                .toBe('Order marked as delivered');
+.toBe('Order marked as delivered');
         });
 
         it('should reject non-admin users', async () => {
@@ -464,7 +478,8 @@ describe('Order API', () => {
                 .put(`/api/orders/${order.id}/deliver`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(403);
+            expect(response.status)
+.toBe(403);
         });
 
         it('should return 404 for a non-existing order', async () => {
@@ -475,7 +490,8 @@ describe('Order API', () => {
                 .put('/api/orders/507f1f77bcf86cd799439011/deliver')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
         });
     });
 
@@ -495,13 +511,14 @@ describe('Order API', () => {
                     orderStatus: 'shipped',
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
             expect(response.body.data.orderStatus)
-                .toBe('shipped');
+.toBe('shipped');
 
             expect(response.body.message)
-                .toBe('Order status updated successfully');
+.toBe('Order status updated successfully');
         });
 
         it('should reject non-admin users', async () => {
@@ -517,7 +534,8 @@ describe('Order API', () => {
                     orderStatus: 'processing',
                 });
 
-            expect(response.status).toBe(403);
+            expect(response.status)
+.toBe(403);
         });
 
         it('should return 404 for a non-existing order', async () => {
@@ -531,7 +549,8 @@ describe('Order API', () => {
                     orderStatus: 'processing',
                 });
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
         });
 
         it('should reject an invalid order status', async () => {
@@ -548,7 +567,8 @@ describe('Order API', () => {
                     orderStatus: 'invalid-status',
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 });
