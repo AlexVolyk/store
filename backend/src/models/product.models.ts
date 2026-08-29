@@ -1,5 +1,5 @@
 import { db } from '../config/db.ts';
-import { IProduct } from '../types/index.ts';
+import { IProduct, PRODUCT_BADGES } from '../types/index.ts';
 
 const ProductSchema = new db.Schema<IProduct>(
     {
@@ -45,6 +45,11 @@ const ProductSchema = new db.Schema<IProduct>(
             type: String,
             trim: true,
             index: true,
+        },
+        badge: {
+            type: String,
+            enum: PRODUCT_BADGES,
+            trim: true,
         },
         category: {
             type: db.Schema.Types.ObjectId,

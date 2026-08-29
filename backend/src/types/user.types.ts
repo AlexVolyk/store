@@ -1,4 +1,5 @@
 import { Document } from 'mongoose';
+import type { UserRole } from '../constants/index.ts';
 
 export interface IUserAddress {
     street: string;
@@ -12,7 +13,7 @@ export interface IUser extends Document {
     lastName: string;
     email: string;
     password: string;
-    role: 'user' | 'admin';
+    role: UserRole;
     phone: string;
     avatar: string | null;
     bio: string;

@@ -1,7 +1,5 @@
 import type { Document, Types } from 'mongoose';
-
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+import type { OrderStatus, PaymentStatus } from '../constants/index.ts';
 
 export interface IOrderItem {
     product: Types.ObjectId;
@@ -26,6 +24,7 @@ export interface IOrder extends Document {
     user: Types.ObjectId;
     items: IOrderItem[];
     shippingAddress: IShippingAddress;
+    notes?: string;
     paymentMethod: string;
     paymentStatus: PaymentStatus;
     orderStatus: OrderStatus;

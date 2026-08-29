@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ORDER_STATUSES } from '../types/index.ts';
 
 export const createOrderSchema = z.object({
     items: z
@@ -48,6 +49,11 @@ export const createOrderSchema = z.object({
             .min(1, 'Country is required'),
     }),
 
+    notes: z
+        .string()
+        .trim()
+        .optional(),
+
     paymentMethod: z
         .string()
         .trim()
@@ -65,7 +71,7 @@ export const createOrderSchema = z.object({
 });
 
 export const updateOrderStatusSchema = z.object({
-    orderStatus: z.enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),
+    orderStatus: z.enum(ORDER_STATUSES),
 });
 
 export type CreateOrderDTO = z.infer<typeof createOrderSchema>;

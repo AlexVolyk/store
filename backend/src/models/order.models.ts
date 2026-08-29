@@ -1,6 +1,6 @@
 import { InferSchemaType } from 'mongoose';
 import { db } from '../config/db.ts';
-import { IOrder } from '../types/index.ts';
+import { IOrder, ORDER_STATUSES, PAYMENT_STATUSES } from '../types/index.ts';
 
 const OrderItemSchema = new db.Schema(
     {
@@ -105,6 +105,10 @@ const OrderSchema = new db.Schema<IOrder>(
             type: ShippingAddressSchema,
             required: true,
         },
+        notes: {
+            type: String,
+            trim: true,
+        },
         paymentMethod: {
             type: String,
             required: true,
@@ -112,12 +116,12 @@ const OrderSchema = new db.Schema<IOrder>(
         },
         paymentStatus: {
             type: String,
-            enum: ['pending', 'paid', 'failed', 'refunded'],
+            enum: PAYMENT_STATUSES,
             default: 'pending',
         },
         orderStatus: {
             type: String,
-            enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+            enum: ORDER_STATUSES,
             default: 'pending',
         },
         itemsPrice: {

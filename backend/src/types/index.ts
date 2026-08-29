@@ -7,3 +7,4 @@ export * from './review.types.ts';
 export * from './service.types.ts';
 export * from './user.types.ts';
 export * from './wishlist.types.ts';
+export * from '../constants/index.ts';
