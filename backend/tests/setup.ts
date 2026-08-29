@@ -4,7 +4,6 @@ dotenv.config({
     path: '.env.test',
 });
 
-
 console.log('TEST ENV:', {
     nodeEnv: process.env.NODE_ENV,
     port: process.env.PORT,

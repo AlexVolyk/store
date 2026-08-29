@@ -76,7 +76,10 @@ const OrderSchema = new db.Schema<IOrder>(
         orderNumber: {
             type: String,
             unique: true,
-            default: () => `ORD-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`,
+            default: () =>
+                `ORD-${Date.now()
+.toString()
+.slice(-6)}-${Math.floor(100 + Math.random() * 900)}`,
         },
         trackingNumber: {
             type: String,

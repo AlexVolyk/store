@@ -1,15 +1,11 @@
-import {
-    ProductModel,
-    WishlistModel,
-} from "../models/index.ts";
-import { ServiceResult } from "../types/service.types.ts";
+import { ProductModel, WishlistModel } from '../models/index.ts';
+import { ServiceResult } from '../types/service.types.ts';
 
-export const getWishlist = async (
-    userId: string,
-): Promise<ServiceResult> => {
+export const getWishlist = async (userId: string): Promise<ServiceResult> => {
     const wishlist = await WishlistModel.findOne({
         user: userId,
-    }).populate("products");
+    })
+.populate('products');
 
     return {
         statusCode: 200,
@@ -17,7 +13,7 @@ export const getWishlist = async (
             user: userId,
             products: [],
         },
-        message: "Wishlist fetched successfully",
+        message: 'Wishlist fetched successfully',
     };
 };
 
@@ -30,7 +26,7 @@ export const addWishlistProduct = async (
     if (!product) {
         return {
             statusCode: 404,
-            message: "Product not found",
+            message: 'Product not found',
         };
     }
 
@@ -42,7 +38,7 @@ export const addWishlistProduct = async (
     if (existingWishlist) {
         return {
             statusCode: 409,
-            message: "Product is already in wishlist",
+            message: 'Product is already in wishlist',
         };
     }
 
@@ -60,12 +56,13 @@ export const addWishlistProduct = async (
             new: true,
             upsert: true,
         },
-    ).populate("products");
+    )
+.populate('products');
 
     return {
         statusCode: 200,
         data: wishlist,
-        message: "Product added to wishlist successfully",
+        message: 'Product added to wishlist successfully',
     };
 };
 
@@ -83,18 +80,19 @@ export const deleteWishlistProduct = async (
         {
             new: true,
         },
-    ).populate("products");
+    )
+.populate('products');
 
     if (!wishlist) {
         return {
             statusCode: 404,
-            message: "Wishlist not found",
+            message: 'Wishlist not found',
         };
     }
 
     return {
         statusCode: 200,
         data: wishlist,
-        message: "Product removed from wishlist successfully",
+        message: 'Product removed from wishlist successfully',
     };
 };

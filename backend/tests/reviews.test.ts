@@ -2,12 +2,7 @@ import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { app } from '../src/app.ts';
-import {
-    CategoryModel,
-    ProductModel,
-    ReviewModel,
-    UserModel,
-} from '../src/models/index.ts';
+import { CategoryModel, ProductModel, ReviewModel, UserModel } from '../src/models/index.ts';
 import { getToken } from '../src/utils/index.ts';
 
 describe('Review API', () => {
@@ -42,10 +37,7 @@ describe('Review API', () => {
         });
     };
 
-    const createProduct = async (
-        categoryId: string,
-        overrides = {},
-    ) => {
+    const createProduct = async (categoryId: string, overrides = {}) => {
         return ProductModel.create({
             name: `Test Product-${Date.now()}`,
             description: 'Test product description',
@@ -58,11 +50,7 @@ describe('Review API', () => {
         });
     };
 
-    const createReview = async (
-        userId: string,
-        productId: string,
-        overrides = {},
-    ) => {
+    const createReview = async (userId: string, productId: string, overrides = {}) => {
         return ReviewModel.create({
             user: userId,
             product: productId,
@@ -72,10 +60,8 @@ describe('Review API', () => {
         });
     };
 
-    const getAuthToken = async (
-        user?: Awaited<ReturnType<typeof createUser>>,
-    ) => {
-        const authUser = user ?? await createUser();
+    const getAuthToken = async (user?: Awaited<ReturnType<typeof createUser>>) => {
+        const authUser = user ?? (await createUser());
 
         return {
             user: authUser,
@@ -99,15 +85,17 @@ describe('Review API', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send(validReviewPayload);
 
-            expect(response.status).toBe(201);
+            expect(response.status)
+.toBe(201);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 rating: 5,
                 comment: 'Excellent product, highly recommend!',
             });
 
             expect(response.body.message)
-                .toBe('Review created successfully');
+.toBe('Review created successfully');
 
             const review = await ReviewModel.findOne({
                 product: product.id,
@@ -117,8 +105,10 @@ describe('Review API', () => {
 
             const updatedProduct = await ProductModel.findById(product.id);
 
-            expect(updatedProduct?.averageRating).toBe(5);
-            expect(updatedProduct?.reviewCount).toBe(1);
+            expect(updatedProduct?.averageRating)
+.toBe(5);
+            expect(updatedProduct?.reviewCount)
+.toBe(1);
         });
 
         it('should reject unauthenticated requests', async () => {
@@ -129,7 +119,8 @@ describe('Review API', () => {
                 .post(`/api/products/${product.id}/reviews`)
                 .send(validReviewPayload);
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should return 404 when product does not exist', async () => {
@@ -140,10 +131,11 @@ describe('Review API', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send(validReviewPayload);
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Product not found');
+.toBe('Product not found');
         });
 
         it('should reject duplicate reviews from the same user', async () => {
@@ -158,10 +150,11 @@ describe('Review API', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send(validReviewPayload);
 
-            expect(response.status).toBe(409);
+            expect(response.status)
+.toBe(409);
 
             expect(response.body.message)
-                .toBe('You have already reviewed this product');
+.toBe('You have already reviewed this product');
         });
 
         it('should reject invalid review data', async () => {
@@ -177,7 +170,8 @@ describe('Review API', () => {
                     comment: '',
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
 
         it('should reject an invalid product id', async () => {
@@ -188,12 +182,13 @@ describe('Review API', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send(validReviewPayload);
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 
     describe('PUT /api/reviews/:id', () => {
-        it('should update the review owner\'s review', async () => {
+        it("should update the review owner's review", async () => {
             const category = await createCategory();
             const product = await createProduct(category.id);
             const { user, token } = await getAuthToken();
@@ -207,19 +202,22 @@ describe('Review API', () => {
                     comment: 'Updated comment',
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 rating: 2,
                 comment: 'Updated comment',
             });
 
             expect(response.body.message)
-                .toBe('Review updated successfully');
+.toBe('Review updated successfully');
 
             const updatedProduct = await ProductModel.findById(product.id);
 
-            expect(updatedProduct?.averageRating).toBe(2);
+            expect(updatedProduct?.averageRating)
+.toBe(2);
         });
 
         it('should reject unauthenticated requests', async () => {
@@ -229,12 +227,13 @@ describe('Review API', () => {
             const review = await createReview(user.id, product.id);
 
             const response = await request(app)
-                .put(`/api/reviews/${review.id}`)
-                .send({
-                    rating: 3,
-                });
+.put(`/api/reviews/${review.id}`)
+.send({
+                rating: 3,
+            });
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should reject updates from a non-owner user', async () => {
@@ -251,10 +250,11 @@ describe('Review API', () => {
                     rating: 1,
                 });
 
-            expect(response.status).toBe(403);
+            expect(response.status)
+.toBe(403);
 
             expect(response.body.message)
-                .toBe('You do not have permission to update this review');
+.toBe('You do not have permission to update this review');
         });
 
         it('should allow an admin to update any review', async () => {
@@ -273,9 +273,11 @@ describe('Review API', () => {
                     comment: 'Admin updated',
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 rating: 1,
                 comment: 'Admin updated',
             });
@@ -291,10 +293,11 @@ describe('Review API', () => {
                     rating: 3,
                 });
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Review not found');
+.toBe('Review not found');
         });
 
         it('should reject an empty update body', async () => {
@@ -308,7 +311,8 @@ describe('Review API', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send({});
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
 
         it('should reject an invalid review id', async () => {
@@ -321,12 +325,13 @@ describe('Review API', () => {
                     rating: 3,
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 
     describe('DELETE /api/reviews/:id', () => {
-        it('should delete the review owner\'s review and recalculate product rating', async () => {
+        it("should delete the review owner's review and recalculate product rating", async () => {
             const category = await createCategory();
             const product = await createProduct(category.id, {
                 averageRating: 4,
@@ -339,19 +344,23 @@ describe('Review API', () => {
                 .delete(`/api/reviews/${review.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
             expect(response.body.message)
-                .toBe('Review deleted successfully');
+.toBe('Review deleted successfully');
 
             const deletedReview = await ReviewModel.findById(review.id);
 
-            expect(deletedReview).toBeNull();
+            expect(deletedReview)
+.toBeNull();
 
             const updatedProduct = await ProductModel.findById(product.id);
 
-            expect(updatedProduct?.averageRating).toBe(0);
-            expect(updatedProduct?.reviewCount).toBe(0);
+            expect(updatedProduct?.averageRating)
+.toBe(0);
+            expect(updatedProduct?.reviewCount)
+.toBe(0);
         });
 
         it('should reject unauthenticated requests', async () => {
@@ -361,9 +370,10 @@ describe('Review API', () => {
             const review = await createReview(user.id, product.id);
 
             const response = await request(app)
-                .delete(`/api/reviews/${review.id}`);
+.delete(`/api/reviews/${review.id}`);
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should reject deletes from a non-owner user', async () => {
@@ -377,10 +387,11 @@ describe('Review API', () => {
                 .delete(`/api/reviews/${review.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(403);
+            expect(response.status)
+.toBe(403);
 
             expect(response.body.message)
-                .toBe('You do not have permission to delete this review');
+.toBe('You do not have permission to delete this review');
         });
 
         it('should allow an admin to delete any review', async () => {
@@ -395,11 +406,13 @@ describe('Review API', () => {
                 .delete(`/api/reviews/${review.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
             const deletedReview = await ReviewModel.findById(review.id);
 
-            expect(deletedReview).toBeNull();
+            expect(deletedReview)
+.toBeNull();
         });
 
         it('should return 404 for a non-existing review', async () => {
@@ -409,10 +422,11 @@ describe('Review API', () => {
                 .delete('/api/reviews/507f1f77bcf86cd799439011')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Review not found');
+.toBe('Review not found');
         });
 
         it('should reject an invalid review id', async () => {
@@ -422,7 +436,8 @@ describe('Review API', () => {
                 .delete('/api/reviews/invalid-id')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 });

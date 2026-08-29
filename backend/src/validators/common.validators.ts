@@ -1,11 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const objectIdSchema = z
     .string()
-    .regex(
-        /^[0-9a-fA-F]{24}$/,
-        "Invalid ID",
-    );
+    .regex(/^[0-9a-fA-F]{24}$/, 'Invalid ID');
 
 export const idParamsSchema = z.object({
     id: objectIdSchema,
@@ -15,7 +12,7 @@ export const idOrSlugParamsSchema = z.object({
     id: z
         .string()
         .trim()
-        .min(1, "Identifier is required"),
+        .min(1, 'Identifier is required'),
 });
 
 export const productIdParamsSchema = z.object({

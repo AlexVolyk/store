@@ -45,16 +45,21 @@ describe('Category API', () => {
             });
 
             const response = await request(app)
-                .get('/api/categories');
+.get('/api/categories');
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body).toHaveProperty('data');
-            expect(Array.isArray(response.body.data)).toBe(true);
+            expect(response.body)
+.toHaveProperty('data');
+            expect(Array.isArray(response.body.data))
+.toBe(true);
 
-            expect(response.body.data).toHaveLength(2);
+            expect(response.body.data)
+.toHaveLength(2);
 
-            expect(response.body.data).toEqual(
+            expect(response.body.data)
+.toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
                         name: 'Electronics',
@@ -67,19 +72,21 @@ describe('Category API', () => {
             );
 
             expect(response.body.message)
-                .toBe('Categories fetched successfully');
+.toBe('Categories fetched successfully');
         });
 
         it('should return an empty array when there are no categories', async () => {
             const response = await request(app)
-                .get('/api/categories');
+.get('/api/categories');
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toEqual([]);
+            expect(response.body.data)
+.toEqual([]);
 
             expect(response.body.message)
-                .toBe('No categories yet');
+.toBe('No categories yet');
         });
     });
 
@@ -88,34 +95,38 @@ describe('Category API', () => {
             const category = await createCategory();
 
             const response = await request(app)
-                .get(`/api/categories/${category.id}`);
+.get(`/api/categories/${category.id}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 name: 'Electronics',
                 description: 'Electronic products',
             });
 
             expect(response.body.message)
-                .toBe('Category fetched successfully');
+.toBe('Category fetched successfully');
         });
 
         it('should return 404 for a non-existing category', async () => {
             const response = await request(app)
-                .get('/api/categories/507f1f77bcf86cd799439011');
+.get('/api/categories/507f1f77bcf86cd799439011');
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Category not found');
+.toBe('Category not found');
         });
 
         it('should reject an invalid category id', async () => {
             const response = await request(app)
-                .get('/api/categories/invalid-id');
+.get('/api/categories/invalid-id');
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 
@@ -131,15 +142,17 @@ describe('Category API', () => {
                     description: 'Electronic products',
                 });
 
-            expect(response.status).toBe(201);
+            expect(response.status)
+.toBe(201);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 name: 'Electronics',
                 description: 'Electronic products',
             });
 
             expect(response.body.message)
-                .toBe('Category created successfully');
+.toBe('Category created successfully');
 
             const category = await CategoryModel.findOne({
                 name: 'Electronics',
@@ -150,12 +163,13 @@ describe('Category API', () => {
 
         it('should reject unauthenticated requests', async () => {
             const response = await request(app)
-                .post('/api/categories')
-                .send({
-                    name: 'Electronics',
-                });
+.post('/api/categories')
+.send({
+                name: 'Electronics',
+            });
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should reject duplicate category names', async () => {
@@ -172,10 +186,11 @@ describe('Category API', () => {
                     name: 'Electronics',
                 });
 
-            expect(response.status).toBe(409);
+            expect(response.status)
+.toBe(409);
 
             expect(response.body.message)
-                .toBe('Category with this name already exists');
+.toBe('Category with this name already exists');
         });
 
         it('should trim the category name', async () => {
@@ -188,10 +203,11 @@ describe('Category API', () => {
                     name: '  Electronics  ',
                 });
 
-            expect(response.status).toBe(201);
+            expect(response.status)
+.toBe(201);
 
             expect(response.body.data.name)
-                .toBe('Electronics');
+.toBe('Electronics');
         });
 
         it('should reject invalid category data', async () => {
@@ -204,7 +220,8 @@ describe('Category API', () => {
                     name: '',
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 
@@ -222,34 +239,35 @@ describe('Category API', () => {
                     description: 'Updated description',
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 name: 'Updated Electronics',
                 description: 'Updated description',
             });
 
             expect(response.body.message)
-                .toBe('Category updated successfully');
+.toBe('Category updated successfully');
 
-            const updatedCategory = await CategoryModel.findById(
-                category.id,
-            );
+            const updatedCategory = await CategoryModel.findById(category.id);
 
             expect(updatedCategory?.name)
-                .toBe('Updated Electronics');
+.toBe('Updated Electronics');
         });
 
         it('should reject unauthenticated requests', async () => {
             const category = await createCategory();
 
             const response = await request(app)
-                .put(`/api/categories/${category.id}`)
-                .send({
-                    name: 'Updated Electronics',
-                });
+.put(`/api/categories/${category.id}`)
+.send({
+                name: 'Updated Electronics',
+            });
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should return 404 for a non-existing category', async () => {
@@ -262,10 +280,11 @@ describe('Category API', () => {
                     name: 'Updated Electronics',
                 });
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Category not found');
+.toBe('Category not found');
         });
 
         it('should reject duplicate category names', async () => {
@@ -286,10 +305,11 @@ describe('Category API', () => {
                     name: 'Electronics',
                 });
 
-            expect(response.status).toBe(409);
+            expect(response.status)
+.toBe(409);
 
             expect(response.body.message)
-                .toBe('Category with this name already exists');
+.toBe('Category with this name already exists');
         });
 
         it('should reject an invalid category id', async () => {
@@ -302,7 +322,8 @@ describe('Category API', () => {
                     name: 'Updated',
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 
@@ -316,25 +337,26 @@ describe('Category API', () => {
                 .delete(`/api/categories/${category.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
             expect(response.body.message)
-                .toBe('Category deleted successfully');
+.toBe('Category deleted successfully');
 
-            const deletedCategory = await CategoryModel.findById(
-                category.id,
-            );
+            const deletedCategory = await CategoryModel.findById(category.id);
 
-            expect(deletedCategory).toBeNull();
+            expect(deletedCategory)
+.toBeNull();
         });
 
         it('should reject unauthenticated requests', async () => {
             const category = await createCategory();
 
             const response = await request(app)
-                .delete(`/api/categories/${category.id}`);
+.delete(`/api/categories/${category.id}`);
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should return 404 for a non-existing category', async () => {
@@ -344,10 +366,11 @@ describe('Category API', () => {
                 .delete('/api/categories/507f1f77bcf86cd799439011')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Category not found');
+.toBe('Category not found');
         });
 
         it('should reject an invalid category id', async () => {
@@ -357,7 +380,8 @@ describe('Category API', () => {
                 .delete('/api/categories/invalid-id')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
     });
 });

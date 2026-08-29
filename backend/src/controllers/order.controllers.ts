@@ -1,13 +1,19 @@
 import type { Request, Response } from 'express';
 
 import { orderService } from '../services/index.ts';
-import { canAccessOrder, getCurrentUserId, getValidateParamsId, isAdmin, sendForbidden, sendServiceResult } from '../utils/index.ts';
+import {
+    canAccessOrder,
+    getCurrentUserId,
+    getValidateParamsId,
+    isAdmin,
+    sendForbidden,
+    sendServiceResult,
+} from '../utils/index.ts';
 import { CreateOrderDTO, UpdateOrderStatusDTO } from '../validators/order.validators.ts';
-
 
 export const createOrder = async (req: Request, res: Response) => {
     const userId = getCurrentUserId(req);
-    const body = req.validatedBody as CreateOrderDTO
+    const body = req.validatedBody as CreateOrderDTO;
 
     const result = await orderService.createOrder(userId, body);
 
@@ -24,9 +30,8 @@ export const getMyOrders = async (req: Request, res: Response) => {
 
 export const getOrderById = async (req: Request, res: Response) => {
     const userId = getCurrentUserId(req);
-    const id = getValidateParamsId(req)
+    const id = getValidateParamsId(req);
 
-    
     const result = await orderService.getOrderById(id);
 
     if (!result.data) {
@@ -46,7 +51,7 @@ export const getOrderById = async (req: Request, res: Response) => {
 };
 
 export const markOrderAsPaid = async (req: Request, res: Response) => {
-    const id = getValidateParamsId(req)
+    const id = getValidateParamsId(req);
 
     const result = await orderService.markOrderAsPaid(id);
 
@@ -62,7 +67,7 @@ export const markOrderAsPaid = async (req: Request, res: Response) => {
 };
 
 export const markOrderAsDelivered = async (req: Request, res: Response) => {
-    const id = getValidateParamsId(req)
+    const id = getValidateParamsId(req);
 
     if (!isAdmin(req)) {
         return sendForbidden(res);
@@ -74,9 +79,8 @@ export const markOrderAsDelivered = async (req: Request, res: Response) => {
 };
 
 export const updateOrderStatus = async (req: Request, res: Response) => {
-    const id = getValidateParamsId(req)
-    const body = req.validatedBody as UpdateOrderStatusDTO
-
+    const id = getValidateParamsId(req);
+    const body = req.validatedBody as UpdateOrderStatusDTO;
 
     if (!isAdmin(req)) {
         return sendForbidden(res);

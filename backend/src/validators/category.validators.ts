@@ -1,11 +1,11 @@
-import z from "zod";
+import z from 'zod';
 
 export const createCategorySchema = z.object({
     name: z
         .string()
         .trim()
-        .min(1, "Category name is required")
-        .max(100, "Category name is too long"),
+        .min(1, 'Category name is required')
+        .max(100, 'Category name is too long'),
 
     slug: z
         .string()
@@ -24,8 +24,8 @@ export const updateCategorySchema = z
         name: z
             .string()
             .trim()
-            .min(1, "Category name cannot be empty")
-            .max(100, "Category name is too long")
+            .min(1, 'Category name cannot be empty')
+            .max(100, 'Category name is too long')
             .optional(),
 
         slug: z
@@ -40,7 +40,7 @@ export const updateCategorySchema = z
             .optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {
-        message: "At least one category field is required for update",
+        message: 'At least one category field is required for update',
     });
 
 export type CreateCategoryDTO = z.infer<typeof createCategorySchema>;

@@ -9,6 +9,9 @@
     "start": "node dist/src/server.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.ts\"",
+    "lint:fix": "eslint \"**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "vitest",
     "test:run": "vitest run"
   },
@@ -29,6 +32,7 @@
     "eslint": "^10.8.0",
     "globals": "^17.9.0",
     "nodemon": "^3.1.14",
+    "prettier": "^3.9.6",
     "supertest": "^7.2.2",
     "tsx": "^4.23.4",
     "typescript": "^5.9.3",

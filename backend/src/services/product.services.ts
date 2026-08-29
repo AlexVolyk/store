@@ -1,19 +1,15 @@
-import { isValidObjectId } from "mongoose";
+import { isValidObjectId } from 'mongoose';
+import { CategoryModel, ProductModel } from '../models/index.ts';
+
+import type { ServiceResult, ServiceResultProduct } from '../types/index.ts';
 import {
-    CategoryModel,
-    ProductModel,
-} from "../models/index.ts";
+    CreateProductDTO,
+    ProductQueryDTO,
+    UpdateProductDTO,
+} from '../validators/product.validators.ts';
+import { slugify } from '../utils/slug.utils.ts';
 
-import type {
-    ServiceResult,
-    ServiceResultProduct,
-} from "../types/index.ts";
-import { CreateProductDTO, ProductQueryDTO, UpdateProductDTO } from "../validators/product.validators.ts";
-import { slugify } from "../utils/slug.utils.ts";
-
-export const getProducts = async (
-    query: ProductQueryDTO,
-): Promise<ServiceResultProduct> => {
+export const getProducts = async (query: ProductQueryDTO): Promise<ServiceResultProduct> => {
     const filter: Record<string, unknown> = {
         isActive: true,
     };
@@ -22,7 +18,10 @@ export const getProducts = async (
         if (isValidObjectId(query.category)) {
             filter.category = query.category;
         } else {
-            const categoryDoc = await CategoryModel.findOne({ slug: query.category.toLowerCase().trim() });
+            const categoryDoc = await CategoryModel.findOne({
+                slug: query.category.toLowerCase()
+.trim(),
+            });
             if (categoryDoc) {
                 filter.category = categoryDoc._id;
             }
@@ -32,24 +31,19 @@ export const getProducts = async (
     if (query.search) {
         filter.name = {
             $regex: query.search,
-            $options: "i",
+            $options: 'i',
         };
     }
 
-    if (
-        query.minPrice !== undefined ||
-        query.maxPrice !== undefined
-    ) {
+    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
         filter.price = {};
 
         if (query.minPrice !== undefined) {
-            (filter.price as Record<string, number>).$gte =
-                query.minPrice;
+            (filter.price as Record<string, number>).$gte = query.minPrice;
         }
 
         if (query.maxPrice !== undefined) {
-            (filter.price as Record<string, number>).$lte =
-                query.maxPrice;
+            (filter.price as Record<string, number>).$lte = query.maxPrice;
         }
     }
 
@@ -58,19 +52,19 @@ export const getProducts = async (
     };
 
     switch (query.sort) {
-        case "oldest":
+        case 'oldest':
             sortOption = { createdAt: 1 };
             break;
 
-        case "price_asc":
+        case 'price_asc':
             sortOption = { price: 1 };
             break;
 
-        case "price_desc":
+        case 'price_desc':
             sortOption = { price: -1 };
             break;
 
-        case "rating":
+        case 'rating':
             sortOption = { averageRating: -1 };
             break;
     }
@@ -89,17 +83,14 @@ export const getProducts = async (
 
     const totalPages = Math.ceil(total / query.limit) || 1;
 
-    const message =
-        products.length === 0
-            ? "No products yet"
-            : "Products fetched successfully";
+    const message = products.length === 0 ? 'No products yet' : 'Products fetched successfully';
 
     if (query.page > totalPages && totalPages > 0) {
         return {
             statusCode: 404,
             message: 'Page not found',
         };
-    } 
+    }
 
     return {
         statusCode: 200,
@@ -117,28 +108,27 @@ export const getProducts = async (
 export const getProductById = async (idOrSlug: string): Promise<ServiceResult> => {
     const query = isValidObjectId(idOrSlug)
         ? { _id: idOrSlug }
-        : { slug: idOrSlug.toLowerCase().trim() };
+        : { slug: idOrSlug.toLowerCase()
+.trim() };
 
     const product = await ProductModel.findOne(query)
-        .populate("category", "name slug description");
+.populate('category', 'name slug description');
 
     if (!product) {
         return {
             statusCode: 404,
-            message: "Product not found",
+            message: 'Product not found',
         };
     }
 
     return {
         statusCode: 200,
         data: product,
-        message: "Product fetched successfully",
+        message: 'Product fetched successfully',
     };
 };
 
-export const createProduct = async (
-    productDTO: CreateProductDTO,
-): Promise<ServiceResult> => {
+export const createProduct = async (productDTO: CreateProductDTO): Promise<ServiceResult> => {
     const trimmedName = productDTO.name.trim();
     const slug = productDTO.slug ? slugify(productDTO.slug) : slugify(trimmedName);
 
@@ -149,18 +139,16 @@ export const createProduct = async (
     if (existingProduct) {
         return {
             statusCode: 409,
-            message: "Product with this name or slug already exists",
+            message: 'Product with this name or slug already exists',
         };
     }
 
-    const category = await CategoryModel.findById(
-        productDTO.category,
-    );
+    const category = await CategoryModel.findById(productDTO.category);
 
     if (!category) {
         return {
             statusCode: 404,
-            message: "Category not found",
+            message: 'Category not found',
         };
     }
 
@@ -173,7 +161,7 @@ export const createProduct = async (
     return {
         statusCode: 201,
         data: product,
-        message: "Product created successfully",
+        message: 'Product created successfully',
     };
 };
 
@@ -186,7 +174,7 @@ export const updateProduct = async (
     if (!product) {
         return {
             statusCode: 404,
-            message: "Product not found",
+            message: 'Product not found',
         };
     }
 
@@ -214,7 +202,7 @@ export const updateProduct = async (
         if (existingProduct) {
             return {
                 statusCode: 409,
-                message: "Product with this name or slug already exists",
+                message: 'Product with this name or slug already exists',
             };
         }
     }
@@ -224,42 +212,36 @@ export const updateProduct = async (
         if (!category) {
             return {
                 statusCode: 404,
-                message: "Category not found",
+                message: 'Category not found',
             };
         }
     }
 
-    const updatedProduct = await ProductModel.findByIdAndUpdate(
-        id,
-        updateData,
-        {
-            new: true,
-            runValidators: true,
-        },
-    );
+    const updatedProduct = await ProductModel.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true,
+    });
 
     return {
         statusCode: 200,
         data: updatedProduct,
-        message: "Product updated successfully",
+        message: 'Product updated successfully',
     };
 };
 
-export const deleteProduct = async (
-    id: string,
-): Promise<ServiceResult> => {
+export const deleteProduct = async (id: string): Promise<ServiceResult> => {
     const product = await ProductModel.findByIdAndDelete(id);
 
     if (!product) {
         return {
             statusCode: 404,
-            message: "Product not found",
+            message: 'Product not found',
         };
     }
 
     return {
         statusCode: 200,
         data: product,
-        message: "Product deleted successfully",
+        message: 'Product deleted successfully',
     };
 };

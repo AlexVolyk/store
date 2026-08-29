@@ -9,5 +9,5 @@ export const slugify = (text: string): string => {
         .trim()
         .replace(/[^\w\s-]/g, '') // Remove non-word chars
         .replace(/[\s_-]+/g, '-') // Replace spaces/underscores with single hyphen
-        .replace(/^-+|-+$/g, '') // Trim leading/trailing hyphens
-}
+        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+};

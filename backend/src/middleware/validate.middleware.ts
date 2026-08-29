@@ -1,13 +1,13 @@
-import { Request, Response, NextFunction } from "express";
-import { ZodType } from "zod";
+import { Request, Response, NextFunction } from 'express';
+import { ZodType } from 'zod';
 
-export const validateBody = (schema: ZodType, message = "Validation failed") => {
+export const validateBody = (schema: ZodType, message = 'Validation failed') => {
     return (req: Request, res: Response, next: NextFunction) => {
         const result = schema.safeParse(req.body);
 
-
         if (!result.success) {
-            return res.status(400).json({
+            return res.status(400)
+.json({
                 message,
                 errors: result.error.issues,
             });
@@ -20,20 +20,13 @@ export const validateBody = (schema: ZodType, message = "Validation failed") => 
     };
 };
 
-
-export const validateParams = (
-    schema: ZodType,
-    message = "Invalid request parameters"
-) => {
-    return (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ) => {
+export const validateParams = (schema: ZodType, message = 'Invalid request parameters') => {
+    return (req: Request, res: Response, next: NextFunction) => {
         const result = schema.safeParse(req.params);
 
         if (!result.success) {
-            return res.status(400).json({
+            return res.status(400)
+.json({
                 success: false,
                 message,
                 errors: result.error.issues,
@@ -47,21 +40,15 @@ export const validateParams = (
     };
 };
 
-
-export const validateQuery = (
-    schema: ZodType,
-) => {
-    return (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ) => {
+export const validateQuery = (schema: ZodType) => {
+    return (req: Request, res: Response, next: NextFunction) => {
         const result = schema.safeParse(req.query);
 
         if (!result.success) {
-            return res.status(400).json({
+            return res.status(400)
+.json({
                 success: false,
-                message: "Invalid query parameters",
+                message: 'Invalid query parameters',
                 errors: result.error.issues,
             });
         }

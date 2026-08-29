@@ -1,8 +1,8 @@
-export { authRouter } from './auth.routes.ts'
-export { cartRouter } from './cart.routes.ts'
-export { categoryRouter } from './category.routes.ts'
-export { orderRouter } from './order.routes.ts'
-export { productRouter } from './product.routes.ts'
-export { reviewRouter } from './review.routes.ts'
-export { userRouter } from './user.routes.ts'
-export { wishlistRouter } from './wishlist.routes.ts'
+export { authRouter } from './auth.routes.ts';
+export { cartRouter } from './cart.routes.ts';
+export { categoryRouter } from './category.routes.ts';
+export { orderRouter } from './order.routes.ts';
+export { productRouter } from './product.routes.ts';
+export { reviewRouter } from './review.routes.ts';
+export { userRouter } from './user.routes.ts';
+export { wishlistRouter } from './wishlist.routes.ts';

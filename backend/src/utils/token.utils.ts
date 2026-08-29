@@ -1,8 +1,8 @@
-import jwt, { JwtPayload } from 'jsonwebtoken'
-import { env } from '../config/env.ts'
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { env } from '../config/env.ts';
 
 export interface UserTokenPayload extends JwtPayload {
-    id: string
+    id: string;
 }
 
 export const hasUserId = (payload: unknown): payload is UserTokenPayload => {
@@ -11,18 +11,21 @@ export const hasUserId = (payload: unknown): payload is UserTokenPayload => {
         payload !== null &&
         'id' in payload &&
         typeof (payload as Record<string, unknown>).id === 'string'
-    )
-}
+    );
+};
 
 export const getToken = (id: string | number) => {
-    return jwt.sign({ id: String(id) }, env.jwtSecret, { expiresIn: 60 * 60 * 24 })
-}
+    return jwt.sign({ id: String(id) }, env.jwtSecret, { expiresIn: 60 * 60 * 24 });
+};
 
-export const verifyToken = (token: string, secret = env.jwtSecret): UserTokenPayload | undefined => {
+export const verifyToken = (
+    token: string,
+    secret = env.jwtSecret,
+): UserTokenPayload | undefined => {
     try {
-        const decoded = jwt.verify(token, secret)
-        return hasUserId(decoded) ? decoded : undefined
+        const decoded = jwt.verify(token, secret);
+        return hasUserId(decoded) ? decoded : undefined;
     } catch {
-        return undefined
+        return undefined;
     }
-}
+};

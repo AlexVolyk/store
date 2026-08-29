@@ -2,12 +2,7 @@ import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { app } from '../src/app.ts';
-import {
-    CartModel,
-    CategoryModel,
-    ProductModel,
-    UserModel,
-} from '../src/models/index.ts';
+import { CartModel, CategoryModel, ProductModel, UserModel } from '../src/models/index.ts';
 import { getToken } from '../src/utils/index.ts';
 
 describe('Cart API', () => {
@@ -34,10 +29,7 @@ describe('Cart API', () => {
         });
     };
 
-    const createProduct = async (
-        categoryId: string,
-        overrides = {},
-    ) => {
+    const createProduct = async (categoryId: string, overrides = {}) => {
         return ProductModel.create({
             name: 'Test Product',
             description: 'Test product description',
@@ -77,15 +69,17 @@ describe('Cart API', () => {
                 .get('/api/cart')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data).toMatchObject({
+            expect(response.body.data)
+.toMatchObject({
                 user: user.id,
                 items: [],
             });
 
             expect(response.body.message)
-                .toBe('Cart fetched successfully');
+.toBe('Cart fetched successfully');
         });
 
         it('should return the user cart with populated products', async () => {
@@ -93,23 +87,25 @@ describe('Cart API', () => {
             const category = await createCategory();
             const product = await createProduct(category.id);
 
-            await createCart(user.id, [
-                { product: product.id, quantity: 2 },
-            ]);
+            await createCart(user.id, [{ product: product.id, quantity: 2 }]);
 
             const response = await request(app)
                 .get('/api/cart')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data.items).toHaveLength(1);
+            expect(response.body.data.items)
+.toHaveLength(1);
 
-            expect(response.body.data.items[0]).toMatchObject({
+            expect(response.body.data.items[0])
+.toMatchObject({
                 quantity: 2,
             });
 
-            expect(response.body.data.items[0].product).toMatchObject({
+            expect(response.body.data.items[0].product)
+.toMatchObject({
                 name: 'Test Product',
                 price: 100,
             });
@@ -117,9 +113,10 @@ describe('Cart API', () => {
 
         it('should reject a request without a token', async () => {
             const response = await request(app)
-                .get('/api/cart');
+.get('/api/cart');
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
 
         it('should reject an invalid token', async () => {
@@ -127,7 +124,8 @@ describe('Cart API', () => {
                 .get('/api/cart')
                 .set('Authorization', 'Bearer invalid-token');
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
     });
 
@@ -145,14 +143,17 @@ describe('Cart API', () => {
                     quantity: 2,
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
             expect(response.body.message)
-                .toBe('Cart item added successfully');
+.toBe('Cart item added successfully');
 
-            expect(response.body.data.items).toHaveLength(1);
+            expect(response.body.data.items)
+.toHaveLength(1);
 
-            expect(response.body.data.items[0]).toMatchObject({
+            expect(response.body.data.items[0])
+.toMatchObject({
                 quantity: 2,
             });
 
@@ -161,8 +162,10 @@ describe('Cart API', () => {
             });
 
             expect(cart).not.toBeNull();
-            expect(cart?.items).toHaveLength(1);
-            expect(cart?.items[0].quantity).toBe(2);
+            expect(cart?.items)
+.toHaveLength(1);
+            expect(cart?.items[0].quantity)
+.toBe(2);
         });
 
         it('should default quantity to 1 when not provided', async () => {
@@ -177,9 +180,11 @@ describe('Cart API', () => {
                     productId: product.id,
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data.items[0].quantity).toBe(1);
+            expect(response.body.data.items[0].quantity)
+.toBe(1);
         });
 
         it('should increment quantity when the product is already in the cart', async () => {
@@ -187,9 +192,7 @@ describe('Cart API', () => {
             const category = await createCategory();
             const product = await createProduct(category.id);
 
-            await createCart(user.id, [
-                { product: product.id, quantity: 2 },
-            ]);
+            await createCart(user.id, [{ product: product.id, quantity: 2 }]);
 
             const response = await request(app)
                 .post('/api/cart/items')
@@ -199,11 +202,14 @@ describe('Cart API', () => {
                     quantity: 3,
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
-            expect(response.body.data.items).toHaveLength(1);
+            expect(response.body.data.items)
+.toHaveLength(1);
 
-            expect(response.body.data.items[0].quantity).toBe(5);
+            expect(response.body.data.items[0].quantity)
+.toBe(5);
         });
 
         it('should return 404 when the product does not exist', async () => {
@@ -217,10 +223,11 @@ describe('Cart API', () => {
                     quantity: 1,
                 });
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Product not found');
+.toBe('Product not found');
         });
 
         it('should return 422 when the product is not active', async () => {
@@ -238,10 +245,11 @@ describe('Cart API', () => {
                     quantity: 1,
                 });
 
-            expect(response.status).toBe(422);
+            expect(response.status)
+.toBe(422);
 
             expect(response.body.message)
-                .toBe('Product is not available');
+.toBe('Product is not available');
         });
 
         it('should return 422 when there is not enough stock', async () => {
@@ -259,10 +267,11 @@ describe('Cart API', () => {
                     quantity: 5,
                 });
 
-            expect(response.status).toBe(422);
+            expect(response.status)
+.toBe(422);
 
             expect(response.body.message)
-                .toBe('Not enough product stock');
+.toBe('Not enough product stock');
         });
 
         it('should return 422 when incrementing exceeds available stock', async () => {
@@ -272,9 +281,7 @@ describe('Cart API', () => {
                 stock: 5,
             });
 
-            await createCart(user.id, [
-                { product: product.id, quantity: 3 },
-            ]);
+            await createCart(user.id, [{ product: product.id, quantity: 3 }]);
 
             const response = await request(app)
                 .post('/api/cart/items')
@@ -284,10 +291,11 @@ describe('Cart API', () => {
                     quantity: 3,
                 });
 
-            expect(response.status).toBe(422);
+            expect(response.status)
+.toBe(422);
 
             expect(response.body.message)
-                .toBe('Not enough product stock');
+.toBe('Not enough product stock');
         });
 
         it('should reject invalid product data', async () => {
@@ -301,7 +309,8 @@ describe('Cart API', () => {
                     quantity: 0,
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
 
         it('should reject a request without a token', async () => {
@@ -309,13 +318,14 @@ describe('Cart API', () => {
             const product = await createProduct(category.id);
 
             const response = await request(app)
-                .post('/api/cart/items')
-                .send({
-                    productId: product.id,
-                    quantity: 1,
-                });
+.post('/api/cart/items')
+.send({
+                productId: product.id,
+                quantity: 1,
+            });
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
     });
 
@@ -325,9 +335,7 @@ describe('Cart API', () => {
             const category = await createCategory();
             const product = await createProduct(category.id);
 
-            await createCart(user.id, [
-                { product: product.id, quantity: 2 },
-            ]);
+            await createCart(user.id, [{ product: product.id, quantity: 2 }]);
 
             const response = await request(app)
                 .patch(`/api/cart/items/${product.id}`)
@@ -336,12 +344,14 @@ describe('Cart API', () => {
                     quantity: 4,
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
             expect(response.body.message)
-                .toBe('Cart item updated successfully');
+.toBe('Cart item updated successfully');
 
-            expect(response.body.data.items[0].quantity).toBe(4);
+            expect(response.body.data.items[0].quantity)
+.toBe(4);
         });
 
         it('should return 404 when the cart does not exist', async () => {
@@ -356,10 +366,11 @@ describe('Cart API', () => {
                     quantity: 2,
                 });
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Cart not found');
+.toBe('Cart not found');
         });
 
         it('should return 404 when the cart item does not exist', async () => {
@@ -370,9 +381,7 @@ describe('Cart API', () => {
                 name: 'Other Product',
             });
 
-            await createCart(user.id, [
-                { product: product.id, quantity: 1 },
-            ]);
+            await createCart(user.id, [{ product: product.id, quantity: 1 }]);
 
             const response = await request(app)
                 .patch(`/api/cart/items/${otherProduct.id}`)
@@ -381,10 +390,11 @@ describe('Cart API', () => {
                     quantity: 2,
                 });
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Cart item not found');
+.toBe('Cart item not found');
         });
 
         it('should return 422 when there is not enough stock', async () => {
@@ -394,9 +404,7 @@ describe('Cart API', () => {
                 stock: 3,
             });
 
-            await createCart(user.id, [
-                { product: product.id, quantity: 1 },
-            ]);
+            await createCart(user.id, [{ product: product.id, quantity: 1 }]);
 
             const response = await request(app)
                 .patch(`/api/cart/items/${product.id}`)
@@ -405,10 +413,11 @@ describe('Cart API', () => {
                     quantity: 10,
                 });
 
-            expect(response.status).toBe(422);
+            expect(response.status)
+.toBe(422);
 
             expect(response.body.message)
-                .toBe('Not enough product stock');
+.toBe('Not enough product stock');
         });
 
         it('should reject an invalid product id', async () => {
@@ -421,7 +430,8 @@ describe('Cart API', () => {
                     quantity: 2,
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
 
         it('should reject a request without a token', async () => {
@@ -429,12 +439,13 @@ describe('Cart API', () => {
             const product = await createProduct(category.id);
 
             const response = await request(app)
-                .patch(`/api/cart/items/${product.id}`)
-                .send({
-                    quantity: 2,
-                });
+.patch(`/api/cart/items/${product.id}`)
+.send({
+                quantity: 2,
+            });
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
     });
 
@@ -444,26 +455,27 @@ describe('Cart API', () => {
             const category = await createCategory();
             const product = await createProduct(category.id);
 
-            await createCart(user.id, [
-                { product: product.id, quantity: 2 },
-            ]);
+            await createCart(user.id, [{ product: product.id, quantity: 2 }]);
 
             const response = await request(app)
                 .delete(`/api/cart/items/${product.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
             expect(response.body.message)
-                .toBe('Cart item deleted successfully');
+.toBe('Cart item deleted successfully');
 
-            expect(response.body.data.items).toHaveLength(0);
+            expect(response.body.data.items)
+.toHaveLength(0);
 
             const cart = await CartModel.findOne({
                 user: user.id,
             });
 
-            expect(cart?.items).toHaveLength(0);
+            expect(cart?.items)
+.toHaveLength(0);
         });
 
         it('should return 404 when the cart does not exist', async () => {
@@ -475,10 +487,11 @@ describe('Cart API', () => {
                 .delete(`/api/cart/items/${product.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Cart not found');
+.toBe('Cart not found');
         });
 
         it('should return 404 when the cart item does not exist', async () => {
@@ -489,18 +502,17 @@ describe('Cart API', () => {
                 name: 'Other Product',
             });
 
-            await createCart(user.id, [
-                { product: product.id, quantity: 1 },
-            ]);
+            await createCart(user.id, [{ product: product.id, quantity: 1 }]);
 
             const response = await request(app)
                 .delete(`/api/cart/items/${otherProduct.id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(404);
+            expect(response.status)
+.toBe(404);
 
             expect(response.body.message)
-                .toBe('Cart item not found');
+.toBe('Cart item not found');
         });
 
         it('should reject an invalid product id', async () => {
@@ -510,7 +522,8 @@ describe('Cart API', () => {
                 .delete('/api/cart/items/invalid-id')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(400);
+            expect(response.status)
+.toBe(400);
         });
 
         it('should reject a request without a token', async () => {
@@ -518,9 +531,10 @@ describe('Cart API', () => {
             const product = await createProduct(category.id);
 
             const response = await request(app)
-                .delete(`/api/cart/items/${product.id}`);
+.delete(`/api/cart/items/${product.id}`);
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
     });
 
@@ -542,25 +556,29 @@ describe('Cart API', () => {
                 .delete('/api/cart')
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status).toBe(200);
+            expect(response.status)
+.toBe(200);
 
             expect(response.body.message)
-                .toBe('Cart cleared successfully');
+.toBe('Cart cleared successfully');
 
-            expect(response.body.data.items).toHaveLength(0);
+            expect(response.body.data.items)
+.toHaveLength(0);
 
             const cart = await CartModel.findOne({
                 user: user.id,
             });
 
-            expect(cart?.items).toHaveLength(0);
+            expect(cart?.items)
+.toHaveLength(0);
         });
 
         it('should reject a request without a token', async () => {
             const response = await request(app)
-                .delete('/api/cart');
+.delete('/api/cart');
 
-            expect(response.status).toBe(401);
+            expect(response.status)
+.toBe(401);
         });
     });
 });

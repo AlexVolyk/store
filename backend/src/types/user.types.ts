@@ -1,4 +1,4 @@
-import { Document } from "mongoose";
+import { Document } from 'mongoose';
 
 export interface IUserAddress {
     street: string;
@@ -12,7 +12,7 @@ export interface IUser extends Document {
     lastName: string;
     email: string;
     password: string;
-    role: "user" | "admin";
+    role: 'user' | 'admin';
     phone: string;
     avatar: string | null;
     bio: string;

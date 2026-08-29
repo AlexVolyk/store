@@ -5,13 +5,11 @@ import { CreateCategoryDTO, UpdateCategoryDTO } from '../validators/category.val
 import { slugify } from '../utils/slug.utils.ts';
 
 export const getCategories = async (): Promise<ServiceResult> => {
-    const categories = await CategoryModel
-        .find()
-        .sort({ name: 1 });
+    const categories = await CategoryModel.find()
+.sort({ name: 1 });
 
-    const message = categories.length === 0
-        ? "No categories yet"
-        : "Categories fetched successfully";
+    const message =
+        categories.length === 0 ? 'No categories yet' : 'Categories fetched successfully';
 
     return {
         statusCode: 200,
@@ -23,21 +21,22 @@ export const getCategories = async (): Promise<ServiceResult> => {
 export const getCategoryById = async (idOrSlug: string): Promise<ServiceResult> => {
     const query = isValidObjectId(idOrSlug)
         ? { _id: idOrSlug }
-        : { slug: idOrSlug.toLowerCase().trim() };
+        : { slug: idOrSlug.toLowerCase()
+.trim() };
 
     const category = await CategoryModel.findOne(query);
 
     if (!category) {
         return {
             statusCode: 404,
-            message: "Category not found",
+            message: 'Category not found',
         };
     }
 
     return {
         statusCode: 200,
         data: category,
-        message: "Category fetched successfully",
+        message: 'Category fetched successfully',
     };
 };
 
@@ -52,7 +51,7 @@ export const createCategory = async (categoryDTO: CreateCategoryDTO): Promise<Se
     if (existingCategory) {
         return {
             statusCode: 409,
-            message: "Category with this name or slug already exists",
+            message: 'Category with this name or slug already exists',
         };
     }
 
@@ -65,7 +64,7 @@ export const createCategory = async (categoryDTO: CreateCategoryDTO): Promise<Se
     return {
         statusCode: 201,
         data: category,
-        message: "Category created successfully",
+        message: 'Category created successfully',
     };
 };
 
@@ -97,31 +96,27 @@ export const updateCategory = async (
         if (existingCategory) {
             return {
                 statusCode: 409,
-                message: "Category with this name or slug already exists",
+                message: 'Category with this name or slug already exists',
             };
         }
     }
 
-    const category = await CategoryModel.findByIdAndUpdate(
-        id,
-        updateData,
-        {
-            new: true,
-            runValidators: true,
-        },
-    );
+    const category = await CategoryModel.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true,
+    });
 
     if (!category) {
         return {
             statusCode: 404,
-            message: "Category not found",
+            message: 'Category not found',
         };
     }
 
     return {
         statusCode: 200,
         data: category,
-        message: "Category updated successfully",
+        message: 'Category updated successfully',
     };
 };
 
@@ -131,7 +126,7 @@ export const deleteCategory = async (id: string): Promise<ServiceResult> => {
     if (!category) {
         return {
             statusCode: 404,
-            message: "Category not found",
+            message: 'Category not found',
         };
     }
 
@@ -149,6 +144,6 @@ export const deleteCategory = async (id: string): Promise<ServiceResult> => {
     return {
         statusCode: 200,
         data: category,
-        message: "Category deleted successfully",
+        message: 'Category deleted successfully',
     };
 };

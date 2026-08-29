@@ -24,7 +24,7 @@ const UserAddressSchema = new db.Schema(
             default: 'United States',
         },
     },
-    { _id: false }
+    { _id: false },
 );
 
 const UserSchema = new db.Schema<IUser>(
@@ -80,11 +80,12 @@ const UserSchema = new db.Schema<IUser>(
     },
     {
         timestamps: true,
-    }
+    },
 );
 
 // Virtual field for user full name
-UserSchema.virtual('fullName').get(function () {
+UserSchema.virtual('fullName')
+.get(function () {
     return `${this.firstName} ${this.lastName}`.trim();
 });
 
