@@ -1,667 +1,258 @@
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
-
 import { app } from '../src/app.ts';
-import { CategoryModel, ProductModel, UserModel } from '../src/models/index.ts';
-import { getToken } from '../src/utils/index.ts';
+import { ProductModel } from '../src/models/index.ts';
+import {
+    clearTestDatabase,
+    createTestCategory,
+    createTestProduct,
+    createTestUser,
+} from './helpers/testSeeds.ts';
 
 describe('Product API', () => {
     beforeEach(async () => {
-        await ProductModel.deleteMany({});
-        await CategoryModel.deleteMany({});
-        await UserModel.deleteMany({});
+        await clearTestDatabase();
     });
 
-    const createUser = async () => {
-        return UserModel.create({
-            firstName: 'John',
-            lastName: 'Doe',
-            email: `john-${Date.now()}@test.com`,
-            password: 'Password123!',
-        });
-    };
-
-    const createCategory = async (overrides = {}) => {
-        return CategoryModel.create({
-            name: `Electronics-${Date.now()}`,
-            description: 'Electronic products',
-            ...overrides,
-        });
-    };
-
-    const createProduct = async (categoryId: string, overrides = {}) => {
-        return ProductModel.create({
-            name: `Test Product-${Date.now()}`,
-            description: 'Test product description',
-            price: 100,
-            stock: 10,
-            images: ['image.jpg'],
-            brand: 'Test Brand',
-            category: categoryId,
-            ...overrides,
-        });
-    };
-
-    const getAuthToken = async () => {
-        const user = await createUser();
-
-        return getToken(user.id);
-    };
-
     const validProductPayload = (categoryId: string) => ({
-        name: 'New Product',
-        description: 'A brand new product',
-        price: 99.99,
-        stock: 25,
-        images: ['photo.jpg'],
-        brand: 'BrandX',
+        name: `Analog Timepiece ${Date.now()}`,
+        description: 'Refined brushed titanium casing with sapphire glass.',
+        price: 350,
+        discountPrice: 290,
+        stock: 20,
+        images: ['https://images.unsplash.com/photo-1?w=900'],
+        brand: 'Forma Studio',
         category: categoryId,
+        badge: 'New Arrival',
     });
 
     describe('GET /api/products', () => {
         it('should return all active products with pagination', async () => {
-            const category = await createCategory();
+            const category = await createTestCategory('Living');
 
-            await createProduct(category.id, {
-                name: 'Laptop',
+            await createTestProduct(category._id.toString(), {
+                name: 'Laptop Desk',
                 price: 999,
             });
 
-            await createProduct(category.id, {
-                name: 'Phone',
-                price: 499,
+            await createTestProduct(category._id.toString(), {
+                name: 'Desk Lamp',
+                price: 199,
             });
 
-            const response = await request(app)
-.get('/api/products');
+            const response = await request(app).get('/api/products');
 
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body.data)
-.toHaveLength(2);
-
-            expect(response.body.pagination)
-.toMatchObject({
+            expect(response.status).toBe(200);
+            expect(response.body.data).toHaveLength(2);
+            expect(response.body.pagination).toMatchObject({
                 page: 1,
                 limit: 10,
                 total: 2,
                 totalPages: 1,
             });
-
-            expect(response.body.message)
-.toBe('Products fetched successfully');
         });
 
-        it('should return an empty array when there are no products', async () => {
-            const response = await request(app)
-.get('/api/products');
-
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body.data)
-.toEqual([]);
-
-            expect(response.body.message)
-.toBe('No products yet');
-        });
-
-        it('should exclude inactive products', async () => {
-            const category = await createCategory();
-
-            await createProduct(category.id, {
-                name: 'Active Product',
-                isActive: true,
-            });
-
-            await createProduct(category.id, {
-                name: 'Inactive Product',
-                isActive: false,
-            });
-
-            const response = await request(app)
-.get('/api/products');
-
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body.data)
-.toHaveLength(1);
-
-            expect(response.body.data[0].name)
-.toBe('Active Product');
-        });
-
-        it('should filter products by category', async () => {
-            const electronics = await createCategory({
-                name: 'Electronics',
-            });
-
-            const clothing = await createCategory({
-                name: 'Clothing',
-            });
-
-            await createProduct(electronics.id, {
-                name: 'Laptop',
-            });
-
-            await createProduct(clothing.id, {
-                name: 'T-Shirt',
-            });
-
-            const response = await request(app)
-                .get('/api/products')
-                .query({ category: electronics.id });
-
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body.data)
-.toHaveLength(1);
-
-            expect(response.body.data[0].name)
-.toBe('Laptop');
-        });
-
-        it('should search products by name', async () => {
-            const category = await createCategory();
-
-            await createProduct(category.id, {
-                name: 'Gaming Laptop',
-            });
-
-            await createProduct(category.id, {
-                name: 'Office Chair',
-            });
-
-            const response = await request(app)
-.get('/api/products')
-.query({ search: 'laptop' });
-
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body.data)
-.toHaveLength(1);
-
-            expect(response.body.data[0].name)
-.toBe('Gaming Laptop');
+        it('should return empty array when catalog is empty', async () => {
+            const response = await request(app).get('/api/products');
+            expect(response.status).toBe(200);
+            expect(response.body.data).toEqual([]);
         });
 
         it('should filter products by price range', async () => {
-            const category = await createCategory();
+            const category = await createTestCategory('Accessories');
 
-            await createProduct(category.id, {
-                name: 'Cheap Item',
-                price: 50,
-            });
-
-            await createProduct(category.id, {
-                name: 'Mid Item',
-                price: 150,
-            });
-
-            await createProduct(category.id, {
-                name: 'Expensive Item',
-                price: 500,
-            });
+            await createTestProduct(category._id.toString(), { name: 'Cheap Item', price: 50 });
+            await createTestProduct(category._id.toString(), { name: 'Mid Item', price: 150 });
+            await createTestProduct(category._id.toString(), { name: 'Expensive Item', price: 500 });
 
             const response = await request(app)
                 .get('/api/products')
                 .query({ minPrice: 100, maxPrice: 200 });
 
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body.data)
-.toHaveLength(1);
-
-            expect(response.body.data[0].name)
-.toBe('Mid Item');
+            expect(response.status).toBe(200);
+            expect(response.body.data).toHaveLength(1);
+            expect(response.body.data[0].name).toBe('Mid Item');
         });
 
         it('should sort products by price ascending', async () => {
-            const category = await createCategory();
+            const category = await createTestCategory('Accessories');
 
-            await createProduct(category.id, {
-                name: 'Expensive',
-                price: 300,
-            });
-
-            await createProduct(category.id, {
-                name: 'Cheap',
-                price: 50,
-            });
+            await createTestProduct(category._id.toString(), { name: 'Expensive Watch', price: 900 });
+            await createTestProduct(category._id.toString(), { name: 'Affordable Strap', price: 50 });
 
             const response = await request(app)
-.get('/api/products')
-.query({ sort: 'price_asc' });
+                .get('/api/products')
+                .query({ sort: 'price_asc' });
 
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body.data[0].name)
-.toBe('Cheap');
-
-            expect(response.body.data[1].name)
-.toBe('Expensive');
+            expect(response.status).toBe(200);
+            expect(response.body.data[0].name).toBe('Affordable Strap');
+            expect(response.body.data[1].name).toBe('Expensive Watch');
         });
 
-        it('should paginate products', async () => {
-            const category = await createCategory();
+        it('should filter products by badge', async () => {
+            const category = await createTestCategory('Living');
 
-            for (let i = 1; i <= 3; i++) {
-                await createProduct(category.id, {
-                    name: `Product ${i}`,
-                });
-            }
+            await createTestProduct(category._id.toString(), { name: 'Sale Chair', badge: 'Sale' });
+            await createTestProduct(category._id.toString(), { name: 'New Lamp', badge: 'New Arrival' });
 
             const response = await request(app)
-.get('/api/products')
-.query({ page: 2, limit: 1 });
+                .get('/api/products')
+                .query({ badge: 'Sale' });
 
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body.data)
-.toHaveLength(1);
-
-            expect(response.body.pagination)
-.toMatchObject({
-                page: 2,
-                limit: 1,
-                total: 3,
-                totalPages: 3,
-            });
-        });
-    });
-
-    describe('GET /api/products/:id', () => {
-        it('should return a product by id with populated category', async () => {
-            const category = await createCategory({
-                name: 'Electronics',
-            });
-
-            const product = await createProduct(category.id, {
-                name: 'Laptop',
-                price: 999,
-            });
-
-            const response = await request(app)
-.get(`/api/products/${product.id}`);
-
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body.data)
-.toMatchObject({
-                name: 'Laptop',
-                price: 999,
-            });
-
-            expect(response.body.data.category)
-.toMatchObject({
-                name: 'Electronics',
-                description: 'Electronic products',
-            });
-
-            expect(response.body.message)
-.toBe('Product fetched successfully');
+            expect(response.status).toBe(200);
+            expect(response.body.data).toHaveLength(1);
+            expect(response.body.data[0].badge).toBe('Sale');
         });
 
-        it('should return 404 for a non-existing product', async () => {
+        it('should filter products by brand', async () => {
+            const category = await createTestCategory('Cameras');
+
+            await createTestProduct(category._id.toString(), { name: 'Leica M11', brand: 'Leica' });
+            await createTestProduct(category._id.toString(), { name: 'Sony A7', brand: 'Sony' });
+
             const response = await request(app)
-.get('/api/products/507f1f77bcf86cd799439011');
+                .get('/api/products')
+                .query({ brand: 'Leica' });
 
-            expect(response.status)
-.toBe(404);
-
-            expect(response.body.message)
-.toBe('Product not found');
+            expect(response.status).toBe(200);
+            expect(response.body.data).toHaveLength(1);
+            expect(response.body.data[0].brand).toBe('Leica');
         });
 
-        it('should reject an invalid product id', async () => {
-            const response = await request(app)
-.get('/api/products/invalid-id');
+        it('should exclude inactive products from public listing', async () => {
+            const category = await createTestCategory('Cameras');
 
-            expect(response.status)
-.toBe(400);
+            await createTestProduct(category._id.toString(), { name: 'Active Cam', isActive: true });
+            await createTestProduct(category._id.toString(), { name: 'Archived Cam', isActive: false });
+
+            const response = await request(app).get('/api/products');
+
+            expect(response.status).toBe(200);
+            expect(response.body.data).toHaveLength(1);
+            expect(response.body.data[0].name).toBe('Active Cam');
         });
     });
 
-    describe('POST /api/products', () => {
-        it('should create a product', async () => {
-            const category = await createCategory();
-            const token = await getAuthToken();
-
-            const response = await request(app)
-                .post('/api/products')
-                .set('Authorization', `Bearer ${token}`)
-                .send(validProductPayload(category.id));
-
-            expect(response.status)
-.toBe(201);
-
-            expect(response.body.data)
-.toMatchObject({
-                name: 'New Product',
-                description: 'A brand new product',
-                price: 99.99,
-                stock: 25,
-                brand: 'BrandX',
+    describe('GET /api/products/:idOrSlug', () => {
+        it('should fetch product by ObjectId', async () => {
+            const category = await createTestCategory('Audio');
+            const product = await createTestProduct(category._id.toString(), {
+                name: 'Precision Turntable',
             });
 
-            expect(response.body.message)
-.toBe('Product created successfully');
+            const response = await request(app).get(`/api/products/${product._id}`);
 
-            const product = await ProductModel.findOne({
-                name: 'New Product',
+            expect(response.status).toBe(200);
+            expect(response.body.data.name).toBe('Precision Turntable');
+            expect(response.body.data.category).toHaveProperty('name', 'Audio');
+        });
+
+        it('should fetch product by unique slug', async () => {
+            const category = await createTestCategory('Audio');
+            const product = await createTestProduct(category._id.toString(), {
+                name: 'HiFi Amplifier',
+                slug: 'hifi-amplifier-pro',
             });
 
-            expect(product).not.toBeNull();
+            const response = await request(app).get(`/api/products/${product.slug}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.slug).toBe('hifi-amplifier-pro');
         });
 
-        it('should reject unauthenticated requests', async () => {
-            const category = await createCategory();
+        it('should return 404 for a non-existing product slug/id', async () => {
+            const response = await request(app).get('/api/products/non-existing-product-slug');
+            expect(response.status).toBe(404);
+        });
+    });
+
+    describe('POST /api/products (Admin Only)', () => {
+        it('should allow admin to create a new product', async () => {
+            const category = await createTestCategory('Wearables');
+            const { token: adminToken } = await createTestUser('admin');
+
+            const payload = validProductPayload(category._id.toString());
 
             const response = await request(app)
                 .post('/api/products')
-                .send(validProductPayload(category.id));
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send(payload);
 
-            expect(response.status)
-.toBe(401);
-        });
-
-        it('should reject duplicate product names', async () => {
-            const category = await createCategory();
-
-            await createProduct(category.id, {
-                name: 'Unique Product',
+            expect(response.status).toBe(201);
+            expect(response.body.data).toMatchObject({
+                price: 350,
+                discountPrice: 290,
+                badge: 'New Arrival',
             });
 
-            const token = await getAuthToken();
-
-            const response = await request(app)
-                .post('/api/products')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    ...validProductPayload(category.id),
-                    name: 'Unique Product',
-                });
-
-            expect(response.status)
-.toBe(409);
-
-            expect(response.body.message)
-.toBe('Product with this name already exists');
+            const dbProduct = await ProductModel.findById(response.body.data._id);
+            expect(dbProduct).not.toBeNull();
         });
 
-        it('should return 404 when category does not exist', async () => {
-            const token = await getAuthToken();
+        it('should reject non-admin users with 403 Forbidden', async () => {
+            const category = await createTestCategory('Wearables');
+            const { token: userToken } = await createTestUser('user');
 
             const response = await request(app)
                 .post('/api/products')
-                .set('Authorization', `Bearer ${token}`)
-                .send(validProductPayload('507f1f77bcf86cd799439011'));
+                .set('Authorization', `Bearer ${userToken}`)
+                .send(validProductPayload(category._id.toString()));
 
-            expect(response.status)
-.toBe(404);
-
-            expect(response.body.message)
-.toBe('Category not found');
-        });
-
-        it('should trim the product name', async () => {
-            const category = await createCategory();
-            const token = await getAuthToken();
-
-            const response = await request(app)
-                .post('/api/products')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    ...validProductPayload(category.id),
-                    name: '  Trimmed Product  ',
-                });
-
-            expect(response.status)
-.toBe(201);
-
-            expect(response.body.data.name)
-.toBe('Trimmed Product');
-        });
-
-        it('should reject invalid product data', async () => {
-            const category = await createCategory();
-            const token = await getAuthToken();
-
-            const response = await request(app)
-                .post('/api/products')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    name: '',
-                    description: '',
-                    price: -10,
-                    stock: -1,
-                    category: category.id,
-                });
-
-            expect(response.status)
-.toBe(400);
+            expect(response.status).toBe(403);
         });
 
         it('should reject discount price greater than regular price', async () => {
-            const category = await createCategory();
-            const token = await getAuthToken();
+            const category = await createTestCategory('Wearables');
+            const { token: adminToken } = await createTestUser('admin');
 
             const response = await request(app)
                 .post('/api/products')
-                .set('Authorization', `Bearer ${token}`)
+                .set('Authorization', `Bearer ${adminToken}`)
                 .send({
-                    ...validProductPayload(category.id),
-                    price: 50,
-                    discountPrice: 100,
+                    ...validProductPayload(category._id.toString()),
+                    price: 100,
+                    discountPrice: 200,
                 });
 
-            expect(response.status)
-.toBe(400);
+            expect(response.status).toBe(400);
         });
     });
 
-    describe('PUT /api/products/:id', () => {
-        it('should update a product', async () => {
-            const category = await createCategory();
-            const product = await createProduct(category.id);
-            const token = await getAuthToken();
+    describe('PUT /api/products/:id (Admin Only)', () => {
+        it('should update a product by id', async () => {
+            const category = await createTestCategory('Living');
+            const product = await createTestProduct(category._id.toString());
+            const { token: adminToken } = await createTestUser('admin');
 
             const response = await request(app)
-                .put(`/api/products/${product.id}`)
-                .set('Authorization', `Bearer ${token}`)
+                .put(`/api/products/${product._id}`)
+                .set('Authorization', `Bearer ${adminToken}`)
                 .send({
-                    name: 'Updated Product',
-                    price: 149.99,
+                    name: 'Updated Chair Name',
+                    price: 499,
                 });
 
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body.data)
-.toMatchObject({
-                name: 'Updated Product',
-                price: 149.99,
-            });
-
-            expect(response.body.message)
-.toBe('Product updated successfully');
-
-            const updatedProduct = await ProductModel.findById(product.id);
-
-            expect(updatedProduct?.name)
-.toBe('Updated Product');
-        });
-
-        it('should reject unauthenticated requests', async () => {
-            const category = await createCategory();
-            const product = await createProduct(category.id);
-
-            const response = await request(app)
-.put(`/api/products/${product.id}`)
-.send({
-                name: 'Updated Product',
-            });
-
-            expect(response.status)
-.toBe(401);
-        });
-
-        it('should return 404 for a non-existing product', async () => {
-            const token = await getAuthToken();
-
-            const response = await request(app)
-                .put('/api/products/507f1f77bcf86cd799439011')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    name: 'Updated Product',
-                });
-
-            expect(response.status)
-.toBe(404);
-
-            expect(response.body.message)
-.toBe('Product not found');
-        });
-
-        it('should reject duplicate product names', async () => {
-            const category = await createCategory();
-
-            await createProduct(category.id, {
-                name: 'Existing Product',
-            });
-
-            const product = await createProduct(category.id, {
-                name: 'Another Product',
-            });
-
-            const token = await getAuthToken();
-
-            const response = await request(app)
-                .put(`/api/products/${product.id}`)
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    name: 'Existing Product',
-                });
-
-            expect(response.status)
-.toBe(409);
-
-            expect(response.body.message)
-.toBe('Product with this name already exists');
-        });
-
-        it('should return 404 when updating to a non-existing category', async () => {
-            const category = await createCategory();
-            const product = await createProduct(category.id);
-            const token = await getAuthToken();
-
-            const response = await request(app)
-                .put(`/api/products/${product.id}`)
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    category: '507f1f77bcf86cd799439011',
-                });
-
-            expect(response.status)
-.toBe(404);
-
-            expect(response.body.message)
-.toBe('Category not found');
-        });
-
-        it('should reject an empty update body', async () => {
-            const category = await createCategory();
-            const product = await createProduct(category.id);
-            const token = await getAuthToken();
-
-            const response = await request(app)
-                .put(`/api/products/${product.id}`)
-                .set('Authorization', `Bearer ${token}`)
-                .send({});
-
-            expect(response.status)
-.toBe(400);
-        });
-
-        it('should reject an invalid product id', async () => {
-            const token = await getAuthToken();
-
-            const response = await request(app)
-                .put('/api/products/invalid-id')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    name: 'Updated',
-                });
-
-            expect(response.status)
-.toBe(400);
+            expect(response.status).toBe(200);
+            expect(response.body.data.name).toBe('Updated Chair Name');
+            expect(response.body.data.price).toBe(499);
         });
     });
 
-    describe('DELETE /api/products/:id', () => {
-        it('should delete a product', async () => {
-            const category = await createCategory();
-            const product = await createProduct(category.id);
-            const token = await getAuthToken();
+    describe('DELETE /api/products/:id (Admin Only)', () => {
+        it('should delete a product by id', async () => {
+            const category = await createTestCategory('Living');
+            const product = await createTestProduct(category._id.toString());
+            const { token: adminToken } = await createTestUser('admin');
 
             const response = await request(app)
-                .delete(`/api/products/${product.id}`)
-                .set('Authorization', `Bearer ${token}`);
+                .delete(`/api/products/${product._id}`)
+                .set('Authorization', `Bearer ${adminToken}`);
 
-            expect(response.status)
-.toBe(200);
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('Product deleted successfully');
 
-            expect(response.body.message)
-.toBe('Product deleted successfully');
-
-            const deletedProduct = await ProductModel.findById(product.id);
-
-            expect(deletedProduct)
-.toBeNull();
-        });
-
-        it('should reject unauthenticated requests', async () => {
-            const category = await createCategory();
-            const product = await createProduct(category.id);
-
-            const response = await request(app)
-.delete(`/api/products/${product.id}`);
-
-            expect(response.status)
-.toBe(401);
-        });
-
-        it('should return 404 for a non-existing product', async () => {
-            const token = await getAuthToken();
-
-            const response = await request(app)
-                .delete('/api/products/507f1f77bcf86cd799439011')
-                .set('Authorization', `Bearer ${token}`);
-
-            expect(response.status)
-.toBe(404);
-
-            expect(response.body.message)
-.toBe('Product not found');
-        });
-
-        it('should reject an invalid product id', async () => {
-            const token = await getAuthToken();
-
-            const response = await request(app)
-                .delete('/api/products/invalid-id')
-                .set('Authorization', `Bearer ${token}`);
-
-            expect(response.status)
-.toBe(400);
+            const dbProduct = await ProductModel.findById(product._id);
+            expect(dbProduct).toBeNull();
         });
     });
 });

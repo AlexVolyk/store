@@ -3,10 +3,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { app } from '../src/app.ts';
 import { UserModel } from '../src/models/index.ts';
+import { clearTestDatabase } from './helpers/testSeeds.ts';
 
 describe('Auth API', () => {
     beforeEach(async () => {
-        await UserModel.deleteMany({});
+        await clearTestDatabase();
     });
 
     describe('POST /api/auth/register', () => {

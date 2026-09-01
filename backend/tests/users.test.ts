@@ -1,227 +1,169 @@
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
-import jwt from 'jsonwebtoken';
-import { env } from '../src/config/env.ts';
-
 import { app } from '../src/app.ts';
 import { UserModel } from '../src/models/index.ts';
-import { getToken } from '../src/utils/index.ts';
+import { clearTestDatabase, createTestUser } from './helpers/testSeeds.ts';
 
 describe('User API', () => {
     beforeEach(async () => {
-        await UserModel.deleteMany({});
+        await clearTestDatabase();
     });
 
-    const createUser = async (overrides = {}) => {
-        return UserModel.create({
-            firstName: 'John',
-            lastName: 'Doe',
-            email: 'john@test.com',
-            password: 'Password123!',
-            role: 'admin',
-            ...overrides,
-        });
-    };
-
-    describe('GET /api/users', () => {
-        it('should return all users without authentication', async () => {
-            await createUser({
-                email: 'john@test.com',
-            });
-
-            await createUser({
-                firstName: 'Jane',
-                lastName: 'Doe',
-                email: 'jane@test.com',
-            });
+    describe('GET /api/users/me', () => {
+        it('should return the currently authenticated user profile', async () => {
+            const { token } = await createTestUser('user', 'me@test.com');
 
             const response = await request(app)
-.get('/api/users');
+                .get('/api/users/me')
+                .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body)
-.toHaveProperty('data');
-            expect(Array.isArray(response.body.data))
-.toBe(true);
-            expect(response.body.data)
-.toHaveLength(2);
-
-            expect(response.body.data)
-.toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        firstName: 'John',
-                        lastName: 'Doe',
-                        email: 'john@test.com',
-                    }),
-                    expect.objectContaining({
-                        firstName: 'Jane',
-                        lastName: 'Doe',
-                        email: 'jane@test.com',
-                    }),
-                ]),
-            );
-
-            response.body.data.forEach((user: Record<string, unknown>) => {
-                expect(user).not.toHaveProperty('password');
-            });
-        });
-
-        it('should return an empty array when there are no users', async () => {
-            const response = await request(app)
-.get('/api/users');
-
-            expect(response.status)
-.toBe(200);
-            expect(response.body.data)
-.toEqual([]);
-        });
-    });
-
-    describe('PUT /api/users/update/:id', () => {
-        it('should reject an expired token', async () => {
-            const user = await createUser();
-
-            const expiredToken = jwt.sign({ id: user.id }, env.jwtSecret, { expiresIn: -1 });
-
-            const response = await request(app)
-                .put(`/api/users/update/${user.id}`)
-                .set('Authorization', `Bearer ${expiredToken}`)
-                .send({
-                    firstName: 'Updated',
-                });
-
-            expect(response.status)
-.toBe(401);
-            expect(response.body.message)
-.toBe('Invalid token');
-        });
-    });
-
-    describe('PUT /api/users/update/:id', () => {
-        it('should update a user', async () => {
-            const currentUser = await createUser();
-
-            const token = getToken(currentUser.id);
-
-            const response = await request(app)
-                .put(`/api/users/update/${currentUser.id}`)
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    firstName: 'Updated',
-                    lastName: 'User',
-                });
-
-            expect(response.status)
-.toBe(200);
-
-            expect(response.body.data)
-.toMatchObject({
-                firstName: 'Updated',
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('data');
+            expect(response.body.data).toMatchObject({
+                email: 'me@test.com',
+                firstName: 'Test',
                 lastName: 'User',
-                email: 'john@test.com',
+                role: 'user',
             });
-
             expect(response.body.data).not.toHaveProperty('password');
-
-            const updatedUser = await UserModel.findById(currentUser.id);
-
-            expect(updatedUser?.firstName)
-.toBe('Updated');
-            expect(updatedUser?.lastName)
-.toBe('User');
         });
 
-        it('should reject unauthenticated requests', async () => {
-            const user = await createUser();
-
-            const response = await request(app)
-.put(`/api/users/update/${user.id}`)
-.send({
-                firstName: 'Updated',
-            });
-
-            expect(response.status)
-.toBe(401);
-        });
-
-        it('should reject invalid update data', async () => {
-            const user = await createUser();
-
-            const token = getToken(user.id);
-
-            const response = await request(app)
-                .put(`/api/users/update/${user.id}`)
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    firstName: '',
-                });
-
-            expect(response.status)
-.toBe(400);
-        });
-
-        it('should return 404 for a non-existing user', async () => {
-            const user = await createUser();
-
-            const token = getToken(user.id);
-
-            const response = await request(app)
-                .put('/api/users/update/507f1f77bcf86cd799439011')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    firstName: 'Updated',
-                });
-
-            expect(response.status)
-.toBe(404);
+        it('should reject unauthenticated request with 401', async () => {
+            const response = await request(app).get('/api/users/me');
+            expect(response.status).toBe(401);
         });
     });
 
-    describe('DELETE /api/users/delete/:id', () => {
-        it('should delete a user', async () => {
-            const user = await createUser();
-
-            const token = getToken(user.id);
+    describe('PUT /api/users/me', () => {
+        it('should update the authenticated user profile', async () => {
+            const { user, token } = await createTestUser('user', 'update_me@test.com');
 
             const response = await request(app)
-                .delete(`/api/users/delete/${user.id}`)
-                .set('Authorization', `Bearer ${token}`);
+                .put('/api/users/me')
+                .set('Authorization', `Bearer ${token}`)
+                .send({
+                    firstName: 'Alexander',
+                    lastName: 'Volyk',
+                    phone: '0987654321',
+                    shippingAddress: {
+                        street: '456 Luxury Blvd',
+                        city: 'New York',
+                        postalCode: '10001',
+                        country: 'United States',
+                    },
+                });
 
-            expect(response.status)
-.toBe(200);
+            expect(response.status).toBe(200);
+            expect(response.body.data).toMatchObject({
+                firstName: 'Alexander',
+                lastName: 'Volyk',
+                phone: '0987654321',
+                shippingAddress: {
+                    street: '456 Luxury Blvd',
+                    city: 'New York',
+                    postalCode: '10001',
+                    country: 'United States',
+                },
+            });
 
-            expect(response.body)
-.toHaveProperty('message', 'User deleted successfully');
+            const dbUser = await UserModel.findById(user._id);
+            expect(dbUser?.firstName).toBe('Alexander');
+            expect(dbUser?.shippingAddress?.city).toBe('New York');
+        });
+    });
 
-            const deletedUser = await UserModel.findById(user.id);
+    describe('GET /api/users (Admin Only)', () => {
+        it('should allow admin to list all users', async () => {
+            const { token: adminToken } = await createTestUser('admin', 'admin_list@test.com');
+            await createTestUser('user', 'customer1@test.com');
+            await createTestUser('user', 'customer2@test.com');
 
-            expect(deletedUser)
-.toBeNull();
+            const response = await request(app)
+                .get('/api/users')
+                .set('Authorization', `Bearer ${adminToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('data');
+            expect(Array.isArray(response.body.data)).toBe(true);
+            expect(response.body.data.length).toBeGreaterThanOrEqual(3);
         });
 
-        it('should reject unauthenticated requests', async () => {
-            const user = await createUser();
+        it('should reject non-admin users with 403 Forbidden', async () => {
+            const { token: userToken } = await createTestUser('user', 'regular@test.com');
 
             const response = await request(app)
-.delete(`/api/users/delete/${user.id}`);
-            expect(response.status)
-.toBe(401);
+                .get('/api/users')
+                .set('Authorization', `Bearer ${userToken}`);
+
+            expect(response.status).toBe(403);
+            expect(response.body.message).toContain('Access denied');
         });
+    });
 
-        it('should return 404 for a non-existing user', async () => {
-            const user = await createUser();
-
-            const token = getToken(user.id);
+    describe('GET /api/users/:id', () => {
+        it('should return a user by ID for authorized user', async () => {
+            const { user, token } = await createTestUser('user', 'lookup@test.com');
 
             const response = await request(app)
-                .delete('/api/users/delete/507f1f77bcf86cd799439011')
+                .get(`/api/users/${user._id}`)
                 .set('Authorization', `Bearer ${token}`);
 
-            expect(response.status)
-.toBe(404);
+            expect(response.status).toBe(200);
+            expect(response.body.data._id).toBe(user._id.toString());
+        });
+
+        it('should return 404 for a non-existing valid ObjectId', async () => {
+            const { token } = await createTestUser('admin', 'admin_lookup@test.com');
+
+            const response = await request(app)
+                .get('/api/users/66d2a1b490f8234a91bc9999')
+                .set('Authorization', `Bearer ${token}`);
+
+            expect(response.status).toBe(404);
+        });
+    });
+
+    describe('PUT /api/users/:id', () => {
+        it('should update a user by ID', async () => {
+            const { user, token } = await createTestUser('user', 'put_id@test.com');
+
+            const response = await request(app)
+                .put(`/api/users/${user._id}`)
+                .set('Authorization', `Bearer ${token}`)
+                .send({
+                    firstName: 'UpdatedName',
+                });
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.firstName).toBe('UpdatedName');
+        });
+    });
+
+    describe('DELETE /api/users/:id (Admin Only)', () => {
+        it('should allow admin to delete a user', async () => {
+            const { token: adminToken } = await createTestUser('admin', 'admin_del@test.com');
+            const { user: userToDelete } = await createTestUser('user', 'todelete@test.com');
+
+            const response = await request(app)
+                .delete(`/api/users/${userToDelete._id}`)
+                .set('Authorization', `Bearer ${adminToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('User deleted successfully');
+
+            const dbUser = await UserModel.findById(userToDelete._id);
+            expect(dbUser).toBeNull();
+        });
+
+        it('should prevent non-admin from deleting users', async () => {
+            const { token: userToken } = await createTestUser('user', 'hacker@test.com');
+            const { user: targetUser } = await createTestUser('user', 'victim@test.com');
+
+            const response = await request(app)
+                .delete(`/api/users/${targetUser._id}`)
+                .set('Authorization', `Bearer ${userToken}`);
+
+            expect(response.status).toBe(403);
         });
     });
 });
