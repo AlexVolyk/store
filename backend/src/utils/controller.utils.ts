@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
-import type { ServiceResult, ServiceResultProduct } from '../types/index.ts';
-import { IdParamsDTO, ProductIdParamsDTO } from '../validators/common.validators.ts';
-import { ProductQueryDTO } from '../validators/product.validators.ts';
+import type { AnalyticsPeriod, ServiceResult, ServiceResultProduct } from '../types/index.ts';
+import type { IdParamsDTO, ProductIdParamsDTO } from '../validators/common.validators.ts';
+import type { ProductQueryDTO } from '../validators/product.validators.ts';
+import type { AnalyticsPeriodQueryDTO, SalesTrendQueryDTO } from '../validators/analytics.validators.ts';
 
 export const getCurrentUserId = (req: Request): string => {
     const userId = req.user!._id;
@@ -13,6 +14,18 @@ export const getValidateParamsProductId = (req: Request): string => {
     const { productId } = req.validatedParams as ProductIdParamsDTO;
 
     return productId;
+};
+
+export const getValidateAnalyticsPeriodQuery = (req: Request): AnalyticsPeriod => {
+    const { period } = (req.validatedQuery || {}) as AnalyticsPeriodQueryDTO;
+
+    return period || 'all';
+};
+
+export const getValidateSalesTrendQuery = (req: Request): AnalyticsPeriod => {
+    const { period } = (req.validatedQuery || {}) as SalesTrendQueryDTO;
+
+    return period || '30d';
 };
 
 export const getValidateProductQuery = (req: Request): ProductQueryDTO => {
@@ -34,26 +47,26 @@ export const canAccessOrder = (req: Request, orderUserId: string) =>
 
 export const sendUnauthorized = (res: Response) => {
     res.status(401)
-.json({
-        success: false,
-        message: 'User is not authorized',
-    });
+        .json({
+            success: false,
+            message: 'User is not authorized',
+        });
 };
 
 export const sendForbidden = (res: Response) => {
     res.status(403)
-.json({
-        success: false,
-        message: 'You do not have permission to perform this action. No token',
-    });
+        .json({
+            success: false,
+            message: 'Access denied: Admin privileges required',
+        });
 };
 
 export const invalidToken = (res: Response) =>
     res.status(401)
-.json({
-        success: false,
-        message: 'Invalid token',
-    });
+        .json({
+            success: false,
+            message: 'Invalid token',
+        });
 
 export const sendServiceResult = <T>(res: Response, result: ServiceResult<T>) => {
     const body = {
@@ -62,7 +75,7 @@ export const sendServiceResult = <T>(res: Response, result: ServiceResult<T>) =>
         message: result.message,
     };
     return res.status(result.statusCode)
-.json(body);
+        .json(body);
 };
 
 export const sendServiceResultProduct = <T>(res: Response, result: ServiceResultProduct<T>) => {
@@ -74,5 +87,5 @@ export const sendServiceResultProduct = <T>(res: Response, result: ServiceResult
     };
 
     return res.status(result.statusCode)
-.json(body);
+        .json(body);
 };

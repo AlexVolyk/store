@@ -1,10 +1,10 @@
 import { OrderModel, ProductModel } from '../models/index.ts';
-import { OrderSchemaType } from '../models/order.models.ts';
+import type { OrderSchemaType } from '../models/order.models.ts';
 import { clearCachePattern } from '../utils/index.ts';
 
 import type { ServiceResult } from '../types/index.ts';
-import { CreateOrderDTO, UpdateOrderStatusDTO } from '../validators/order.validators.ts';
-import { HydratedDocument } from 'mongoose';
+import type { CreateOrderDTO, UpdateOrderStatusDTO } from '../validators/order.validators.ts';
+import type { HydratedDocument } from 'mongoose';
 
 type OrderDocument = HydratedDocument<OrderSchemaType>;
 
@@ -130,17 +130,7 @@ export const getOrderById = async (id: string): Promise<ServiceResult<OrderDocum
 };
 
 export const markOrderAsPaid = async (id: string): Promise<ServiceResult<OrderDocument>> => {
-    const order = await OrderModel.findByIdAndUpdate(
-        id,
-        {
-            paymentStatus: 'paid',
-            paidAt: new Date(),
-        },
-        {
-            new: true,
-            runValidators: true,
-        },
-    );
+    const order = await OrderModel.findById(id);
 
     if (!order) {
         return {
@@ -148,6 +138,17 @@ export const markOrderAsPaid = async (id: string): Promise<ServiceResult<OrderDo
             message: 'Order not found',
         };
     }
+
+    if (order.paymentStatus === 'paid') {
+        return {
+            statusCode: 400,
+            message: 'Order is already paid',
+        };
+    }
+
+    order.paymentStatus = 'paid';
+    order.paidAt = new Date();
+    await order.save();
 
     return {
         statusCode: 200,

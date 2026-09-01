@@ -8,6 +8,7 @@ import { env } from './config/env.ts';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.ts';
 import { generalRateLimiter } from './middleware/rateLimit.middleware.ts';
 import {
+    analyticsRouter,
     authRouter,
     cartRouter,
     categoryRouter,
@@ -44,6 +45,7 @@ app.use('/api/cart', cartRouter);
 app.use('/api/wishlist', wishlistRouter);
 app.use('/api/reviews', reviewRouter);
 app.use('/api/orders', orderRouter);
+app.use('/api/admin/analytics', analyticsRouter);
 
 app.get('/api/health', (_req, res) => {
     res.status(200)

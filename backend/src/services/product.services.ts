@@ -2,7 +2,7 @@ import { isValidObjectId } from 'mongoose';
 import { CategoryModel, ProductModel } from '../models/index.ts';
 
 import type { ServiceResult, ServiceResultProduct } from '../types/index.ts';
-import {
+import type {
     CreateProductDTO,
     ProductQueryDTO,
     UpdateProductDTO,
@@ -33,6 +33,17 @@ export const getProducts = async (query: ProductQueryDTO): Promise<ServiceResult
             $regex: query.search,
             $options: 'i',
         };
+    }
+
+    if (query.brand) {
+        filter.brand = {
+            $regex: query.brand,
+            $options: 'i',
+        };
+    }
+
+    if (query.badge) {
+        filter.badge = query.badge;
     }
 
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {

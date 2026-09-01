@@ -1,3 +1,4 @@
+export * from './analytics.types.ts';
 export * from './cart.types.ts';
 export * from './category.types.ts';
 export * from './express.types.ts';

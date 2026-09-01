@@ -45,5 +45,29 @@ export const CACHE_TTL = {
     ONE_DAY: 24 * 60 * 60,
     PRODUCTS: 5 * 60, // 5 minutes
     CATEGORIES: 60 * 60, // 1 hour
+    ANALYTICS: 5 * 60, // 5 minutes
 } as const;
+
+export const ANALYTICS_PERIODS = ['24h', '7d', '30d', '1y', 'all'] as const;
+export type AnalyticsPeriod = (typeof ANALYTICS_PERIODS)[number];
+
+export const TIME_MS = {
+    ONE_HOUR: 60 * 60 * 1000,
+    TWENTY_FOUR_HOURS: 24 * 60 * 60 * 1000,
+    FORTY_EIGHT_HOURS: 48 * 60 * 60 * 1000,
+    SEVEN_DAYS: 7 * 24 * 60 * 60 * 1000,
+    FOURTEEN_DAYS: 14 * 24 * 60 * 60 * 1000,
+    THIRTY_DAYS: 30 * 24 * 60 * 60 * 1000,
+    SIXTY_DAYS: 60 * 24 * 60 * 60 * 1000,
+    ONE_YEAR: 365 * 24 * 60 * 60 * 1000,
+    TWO_YEARS: 730 * 24 * 60 * 60 * 1000,
+} as const;
+
+export const ANALYTICS_PERIOD_MS: Record<Exclude<AnalyticsPeriod, 'all'>, number> = {
+    '24h': TIME_MS.TWENTY_FOUR_HOURS,
+    '7d': TIME_MS.SEVEN_DAYS,
+    '30d': TIME_MS.THIRTY_DAYS,
+    '1y': TIME_MS.ONE_YEAR,
+} as const;
+
 

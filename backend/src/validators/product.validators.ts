@@ -80,34 +80,41 @@ export const updateProductSchema = productSchema
 
 export const productQuerySchema = z.object({
     category: z.string()
-.optional(),
+        .optional(),
 
     search: z.string()
-.trim()
-.optional(),
+        .trim()
+        .optional(),
 
     minPrice: z.coerce.number()
-.min(0)
-.optional(),
+        .min(0)
+        .optional(),
 
     maxPrice: z.coerce.number()
-.min(0)
-.optional(),
+        .min(0)
+        .optional(),
+
+    brand: z.string()
+        .trim()
+        .optional(),
+
+    badge: z.enum(PRODUCT_BADGES)
+        .optional(),
 
     sort: z
         .enum(PRODUCT_SORT_OPTIONS)
         .optional(),
 
     page: z.coerce.number()
-.int()
-.min(1)
-.default(1),
+        .int()
+        .min(1)
+        .default(1),
 
     limit: z.coerce.number()
-.int()
-.min(1)
-.max(100)
-.default(10),
+        .int()
+        .min(1)
+        .max(100)
+        .default(10),
 });
 
 export type CreateProductDTO = z.infer<typeof createProductSchema>;

@@ -1,3 +1,4 @@
+export * as analyticsService from './analytics.services.ts';
 export * as authService from './auth.services.ts';
 export * as cartService from './cart.services.ts';
 export * as categoryService from './category.services.ts';

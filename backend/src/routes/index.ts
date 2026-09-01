@@ -1,3 +1,4 @@
+export { analyticsRouter } from './analytics.routes.ts';
 export { authRouter } from './auth.routes.ts';
 export { cartRouter } from './cart.routes.ts';
 export { categoryRouter } from './category.routes.ts';

@@ -8,11 +8,12 @@ export const generalRateLimiter = rateLimit({
     limit: 100,
     standardHeaders: true,
     legacyHeaders: false,
-    store: env.redisUrl
-        ? new RedisStore({
-              sendCommand: (...args: string[]) => redis.sendCommand(args),
-          })
-        : undefined,
+    store:
+        redis.isOpen && env.nodeEnv !== 'test'
+            ? new RedisStore({
+                sendCommand: (...args: string[]) => redis.sendCommand(args),
+            })
+            : undefined,
     message: {
         success: false,
         message: 'Too many requests from this IP. Please try again after 15 minutes.',
